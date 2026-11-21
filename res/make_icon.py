@@ -1,133 +1,78 @@
-"""Turns res/app.svg (the app icon by nik-txt) into res/app.ico (white: the exe, Start menu and installer, and
-dark themes) and res/app_light.ico (black: the request window on light themes). Needs Python 3 and Pillow.
+"""Draws the BatteryHub icon (res/batteryhub.ico) with Pillow.
 
-Only the simple SVG subset the icon uses is understood: <path d="..."> with M L H V C S Z commands
-(absolute and relative), filled even-odd. Each size is drawn 8x larger and scaled down for smooth edges.
+A rounded blue tile with a white battery outline, a green charge level and a small lightning
+bolt. Every size is drawn at 4x and downscaled, and the smallest sizes get thicker strokes so
+they stay readable on the taskbar. Run: python res/make_icon.py
 """
-import io
-import os
-import re
-import struct
-from PIL import Image, ImageChops, ImageDraw
+from pathlib import Path
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-SIZES = [16, 20, 24, 32, 40, 48, 64, 256]
-VERSIONS = {"app.ico": (255, 255, 255), "app_light.ico": (0, 0, 0)}
-SUPER = 8
+from PIL import Image, ImageDraw
+
+SIZES = [16, 20, 24, 32, 40, 48, 64, 96, 128, 256]
+SS = 4  # supersampling factor
 
 
-def subpaths(d):
-    """Yields each subpath of a path as a list of points (curves flattened)."""
-    tokens = re.findall(r"[MmLlHhVvCcSsZz]|-?(?:\d+\.?\d*|\.\d+)(?:e-?\d+)?", d)
-    i, cmd = 0, None
-    x = y = sx = sy = 0.0
-    last_ctrl = None
-    pts = []
-
-    def num():
-        nonlocal i
-        v = float(tokens[i])
-        i += 1
-        return v
-
-    def bezier(p0, p1, p2, p3):
-        for k in range(1, 17):
-            t = k / 16
-            a, b, c, e = (1 - t) ** 3, 3 * (1 - t) ** 2 * t, 3 * (1 - t) * t * t, t ** 3
-            pts.append((a * p0[0] + b * p1[0] + c * p2[0] + e * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + e * p3[1]))
-
-    while i < len(tokens):
-        if re.match(r"[A-Za-z]", tokens[i]):
-            cmd = tokens[i]
-            i += 1
-        rel = cmd.islower()
-        c = cmd.upper()
-        ctrl = None
-        if c == "M":
-            if len(pts) > 1:
-                yield pts
-            x, y = (x + num(), y + num()) if rel else (num(), num())
-            sx, sy = x, y
-            pts = [(x, y)]
-            cmd = "l" if rel else "L"  # extra pairs after M are lines
-        elif c == "L":
-            x, y = (x + num(), y + num()) if rel else (num(), num())
-            pts.append((x, y))
-        elif c == "H":
-            x = x + num() if rel else num()
-            pts.append((x, y))
-        elif c == "V":
-            y = y + num() if rel else num()
-            pts.append((x, y))
-        elif c in "CS":
-            if c == "C":
-                x1, y1 = num(), num()
-                if rel:
-                    x1, y1 = x + x1, y + y1
-            else:
-                x1, y1 = (2 * x - last_ctrl[0], 2 * y - last_ctrl[1]) if last_ctrl else (x, y)
-            x2, y2, ex, ey = num(), num(), num(), num()
-            if rel:
-                x2, y2, ex, ey = x + x2, y + y2, x + ex, y + ey
-            bezier((x, y), (x1, y1), (x2, y2), (ex, ey))
-            x, y = ex, ey
-            ctrl = (x2, y2)
-        elif c == "Z":
-            x, y = sx, sy
-            if len(pts) > 1:
-                yield pts
-            pts = [(x, y)]
-        last_ctrl = ctrl
-    if len(pts) > 1:
-        yield pts
+def lerp(a, b, t):
+    return tuple(round(x + (y - x) * t) for x, y in zip(a, b))
 
 
-def render(paths, size, box, color):
-    big = size * SUPER
-    x0, y0, side = box
-    scale = big / side
-    mask = Image.new("1", (big, big), 0)
-    for d in paths:
-        for sp in subpaths(d):
-            layer = Image.new("1", (big, big), 0)
-            ImageDraw.Draw(layer).polygon([((px - x0) * scale, (py - y0) * scale) for px, py in sp], fill=1)
-            mask = ImageChops.logical_xor(mask, layer)  # even-odd: overlapping subpaths cut holes
-    alpha = mask.convert("L").resize((size, size), Image.LANCZOS)
-    img = Image.new("RGBA", (size, size), color + (0,))
-    img.putalpha(alpha)
-    return img
+def draw(size: int) -> Image.Image:
+    S = size * SS
+    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+
+    # Tile: vertical gradient, rounded corners.
+    top, bottom = (38, 132, 255), (18, 72, 196)
+    grad = Image.new("RGBA", (S, S))
+    gd = ImageDraw.Draw(grad)
+    for y in range(S):
+        gd.line([(0, y), (S, y)], fill=lerp(top, bottom, y / max(1, S - 1)) + (255,))
+    mask = Image.new("L", (S, S), 0)
+    margin = round(S * 0.04)
+    ImageDraw.Draw(mask).rounded_rectangle([margin, margin, S - margin - 1, S - margin - 1], radius=round(S * 0.22), fill=255)
+    img.paste(grad, (0, 0), mask)
+
+    d = ImageDraw.Draw(img)
+    small = size <= 24
+    stroke = round(S * (0.075 if small else 0.055))
+    # Battery body (horizontal) and terminal nub.
+    bx0, by0 = round(S * 0.16), round(S * 0.30)
+    bx1, by1 = round(S * 0.78), round(S * 0.70)
+    d.rounded_rectangle([bx0, by0, bx1, by1], radius=round(S * 0.08), outline=(255, 255, 255, 255), width=stroke)
+    nub_h = round((by1 - by0) * 0.42)
+    ny0 = (by0 + by1) // 2 - nub_h // 2
+    d.rounded_rectangle([bx1 + round(S * 0.01), ny0, bx1 + round(S * 0.075), ny0 + nub_h], radius=round(S * 0.025), fill=(255, 255, 255, 255))
+
+    # Charge level (about 70%).
+    pad = stroke + round(S * (0.035 if small else 0.03))
+    fx0, fy0, fx1, fy1 = bx0 + pad, by0 + pad, bx1 - pad, by1 - pad
+    level_x = fx0 + round((fx1 - fx0) * 0.70)
+    d.rounded_rectangle([fx0, fy0, level_x, fy1], radius=round(S * 0.03), fill=(76, 217, 100, 255))
+
+    # Lightning bolt over the battery (skipped at the tiniest sizes, where it would be noise).
+    if size >= 32:
+        cx, cy = (bx0 + bx1) / 2, (by0 + by1) / 2
+        h = (by1 - by0) * 0.80
+        w = h * 0.72
+        pts = [
+            (cx + w * 0.10, cy - h / 2),
+            (cx - w * 0.45, cy + h * 0.06),
+            (cx - w * 0.02, cy + h * 0.06),
+            (cx - w * 0.12, cy + h / 2),
+            (cx + w * 0.45, cy - h * 0.08),
+            (cx + w * 0.02, cy - h * 0.08),
+        ]
+        outline = [(x, y) for x, y in pts]
+        d.polygon(outline, fill=(255, 255, 255, 255), outline=(18, 72, 196, 255))
+
+    return img.resize((size, size), Image.LANCZOS)
 
 
-def main():
-    svg = open(os.path.join(HERE, "app.svg"), encoding="utf-8").read()
-    paths = [re.sub(r"\s+", " ", d) for d in re.findall(r'<path[^>]*\sd="([^"]+)"', svg)]
-    # Fit the drawing's bounds into a square with a small margin.
-    xs, ys = [], []
-    for d in paths:
-        for sp in subpaths(d):
-            xs += [p[0] for p in sp]
-            ys += [p[1] for p in sp]
-    w, h = max(xs) - min(xs), max(ys) - min(ys)
-    side = max(w, h) * 1.04
-    box = ((min(xs) + max(xs)) / 2 - side / 2, (min(ys) + max(ys)) / 2 - side / 2, side)
-
-    for name, color in VERSIONS.items():
-        pngs = []
-        for s in SIZES:
-            buf = io.BytesIO()
-            render(paths, s, box, color).save(buf, "PNG")
-            pngs.append(buf.getvalue())
-        out = io.BytesIO()
-        out.write(struct.pack("<HHH", 0, 1, len(SIZES)))
-        offset = 6 + 16 * len(SIZES)
-        for s, p in zip(SIZES, pngs):
-            d = 0 if s >= 256 else s
-            out.write(struct.pack("<BBBBHHII", d, d, 0, 0, 1, 32, len(p), offset))
-            offset += len(p)
-        for p in pngs:
-            out.write(p)
-        open(os.path.join(HERE, name), "wb").write(out.getvalue())
-        print("wrote", name + ":", ", ".join(map(str, SIZES)))
+def main() -> None:
+    out = Path(__file__).with_name("batteryhub.ico")
+    images = [draw(s) for s in SIZES]
+    images[-1].save(out, format="ICO", sizes=[(s, s) for s in SIZES], append_images=images[:-1])
+    images[-1].save(out.with_suffix(".png"))
+    print(f"wrote {out} ({out.stat().st_size} bytes)")
 
 
 if __name__ == "__main__":
