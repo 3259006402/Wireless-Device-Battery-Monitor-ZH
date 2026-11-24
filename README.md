@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-<a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/ferloom/Wireless-Device-Battery-Monitor?label=download&logo=windows" alt="最新发布"></a>
+<a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/3259006402/Wireless-Device-Battery-Monitor-ZH?label=download&logo=windows" alt="最新发布"></a>
 <a href="../../actions/workflows/ci.yml"><img src="../../actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <img src="https://img.shields.io/badge/written%20in-Rust-dea584?logo=rust" alt="使用 Rust 编写">
 <img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="GPL-3.0">
