@@ -1,17 +1,26 @@
-# BatteryHub v1.6（Rust）
+# BatteryHub v1.7 中文版（Rust）
 
 BatteryHub 的 Windows 超轻量 Rust 实现，是对 [krisgfx9/Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor) 的重新实现（recode）。最初的想法、外观以及各设备的通信协议都来自原项目，一切荣誉归原项目作者。
 
-> 本文档由 [README.md](README.md) 的同版本英文原文翻译而来；上游项目：<https://github.com/ferloom/Wireless-Device-Battery-Monitor>。
+> 上游项目（Rust 重写版）：<https://github.com/ferloom/Wireless-Device-Battery-Monitor>。本仓库在其 v1.6 基础上做了中文本地化，并新增了「国产小众设备适配」。
 
 ## 下载
 
 | 文件 | 说明 |
 |---|---|
-| `BatteryHub-Taskbar-Setup-v1.6.exe` | 安装程序：安装 / 更新 / 卸载 |
+| `BatteryHub-Taskbar-Setup-v1.7.exe` | 安装程序：安装 / 更新 / 卸载 |
 | `SHA256SUMS.txt` | 校验和 |
 
 已经装好了？在右键菜单里用 *检查更新...*（v1.1 起），或者运行新的安装程序并点击 **更新**。你的设置和开机启动选择都会保留。
+
+## v1.7 新增（本仓库）
+
+- **国产小众设备适配**（详见 [README](README.md#国产小众设备适配)）：
+  - **品牌识别表**：贴牌 / 白牌设备的 HID 产品串现在会补上中文品牌名和设备类型——雷柏、双飞燕、达尔优、黑爵、狼蛛、迈从、攻击鲨、达摩鲨、万灵、ATK 艾石头、英菲克、富勒、摩豹、前行者、飞智、八位堂、机械师、雷神、华为、小米、联想……，以及中颖、合泰、凌阳、Xenta、亦讯、Areson、DriverCore 这些常被贴牌的方案商。这类设备以前只显示 “Wireless device / ?”。
+  - **芯片族通用探测**：不看 VID:ID，只按 HID 集合的形状认，再按应答格式校验；目前覆盖中颖 Sino Wealth 通用接收器和 DriverCore `373E` 一族。只发只读状态查询，答不上来立刻放弃，探测过的设备 10 分钟内不再打扰。
+  - **自定义设备规则 `devices.ini`**：内置驱动没覆盖的设备，可以自己写“查询帧 + 报告 + 字节位置 + 换算”一条规则，保存即生效，不用改代码、不用等新版本。菜单新增 **自定义设备规则（devices.ini）...**，命令行新增 `--rules`；写错的规则会指出第几行，不会被采用。
+- **中文界面**：任务栏、设备菜单、仪表盘、重命名、请求支持、安装程序与全部文档均为简体中文（范围见 [TRANSLATION.md](TRANSLATION.md)）。
+- 上游的全部驱动与协议、界面布局、更新与回退流程都没有改动；`--listen` 仍是只读诊断。
 
 ## v1.6 新增
 

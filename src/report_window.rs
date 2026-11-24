@@ -129,8 +129,7 @@ pub fn show() {
         let work = mi.rcWork;
         let x = work.left + (work.right - work.left - w) / 2;
         let y = work.top + (work.bottom - work.top - h) / 2;
-        if let Ok(h) =
-            CreateWindowExW(WINDOW_EX_STYLE(0), CLASS, w!("BatteryHub：请求支持某个设备"), style, x, y, w, h, None, None, Some(hinst.into()), None)
+        if let Ok(h) = CreateWindowExW(WINDOW_EX_STYLE(0), CLASS, w!("BatteryHub：请求支持某个设备"), style, x, y, w, h, None, None, Some(hinst.into()), None)
         {
             let _ = ShowWindow(h, SW_SHOW);
             let _ = SetForegroundWindow(h);

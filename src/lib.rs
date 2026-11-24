@@ -3,6 +3,7 @@
 #![cfg(windows)]
 
 pub mod ble;
+pub mod brands;
 pub mod cardfx;
 pub mod dashboard;
 pub mod device;
@@ -20,6 +21,7 @@ pub mod stats;
 pub mod tray_probe;
 pub mod ui;
 pub mod update;
+pub mod userrules;
 pub mod util;
 
 pub use device::{DeviceKind, DeviceStatus, poll_all_devices};

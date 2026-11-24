@@ -95,6 +95,8 @@ const ID_BACKGROUND: usize = 8;
 const ID_SILENT_UPDATE: usize = 9;
 const ID_ICONS_MODE: usize = 10;
 const ID_VERSIONS: usize = 11;
+/// 自定义设备规则（devices.ini）。
+const ID_DEVICE_RULES: usize = 12;
 /// "Show widget on": all monitors, main monitor only, or ID_MONITOR_FIRST + i for one other monitor.
 const ID_MONITOR_ALL: usize = 40;
 const ID_MONITOR_MAIN: usize = 41;
@@ -2152,6 +2154,27 @@ https://github.com/{}/releases",
     }
 }
 
+/// "Custom device rules...": `devices.ini` in Notepad (the template is written the first time).
+/// Parse problems are shown first, so the user sees what to fix before editing.
+fn open_device_rules(main: HWND) {
+    let errors = batteryhub::userrules::errors();
+    if !errors.is_empty() {
+        let mut text = String::from("devices.ini 里有几处问题，这些规则会被跳过：\n\n");
+        for e in errors.iter().take(8) {
+            text.push_str("· ");
+            text.push_str(e);
+            text.push('\n');
+        }
+        if errors.len() > 8 {
+            text.push_str(&format!("…… 还有 {} 处。\n", errors.len() - 8));
+        }
+        message(main, &text, MB_OK | MB_ICONWARNING);
+    }
+    if let Err(e) = batteryhub::userrules::open_editor() {
+        message(main, &e, MB_OK | MB_ICONWARNING);
+    }
+}
+
 /// Hands memory that was only needed for a moment (a read, a Bluetooth check, a render) back to
 /// Windows, so between those moments the program keeps well under 1 MB resident. Pages it needs
 /// again come back from the standby list (soft faults), which costs microseconds.
@@ -2505,6 +2528,8 @@ unsafe fn show_menu() {
             let _ = AppendMenuW(menu, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
             let _ = AppendMenuW(menu, MF_STRING, ID_REQUEST, w!("请求支持某个设备..."));
             icons.set(menu, ID_REQUEST as u32, false, ui::glyph::MAIL);
+            let _ = AppendMenuW(menu, MF_STRING, ID_DEVICE_RULES, w!("自定义设备规则（devices.ini）..."));
+            icons.set(menu, ID_DEVICE_RULES as u32, false, ui::glyph::SETTINGS);
             let busy = UPDATE_BUSY.load(std::sync::atomic::Ordering::Relaxed);
             let label = if busy { "正在检查更新..." } else { "检查更新..." };
             let _ = AppendMenuW(menu, MF_STRING | if busy { MF_GRAYED } else { MF_ENABLED }, ID_CHECK_UPDATES, &windows::core::HSTRING::from(label));
@@ -2633,6 +2658,7 @@ Windows 会像排列其他图标一样排列这些图标：可以拖动改变顺
                     }
                 }
                 ID_REQUEST => batteryhub::report_window::show(),
+                ID_DEVICE_RULES => open_device_rules(main),
                 ID_ON_CHANGE => {
                     let on = !refresh_on_change();
                     save_dword("RefreshOnDeviceChange", on as u32);
@@ -3194,6 +3220,13 @@ fn main() {
         }
         if let Some(i) = args.iter().position(|a| a == "--listen") {
             batteryhub::listen::run(args.get(i + 1).map(|s| s.as_str()));
+            return;
+        }
+        // `--rules`: open the user device rules (`devices.ini`) in Notepad.
+        if args.iter().any(|a| a == "--rules") {
+            if let Err(e) = batteryhub::userrules::open_editor() {
+                MessageBoxW(None, &windows::core::HSTRING::from(e.as_str()), w!("BatteryHub"), MB_OK | MB_ICONWARNING);
+            }
             return;
         }
         // One instance only (diagnostic runs with BH_DEBUG may start a second one for testing).

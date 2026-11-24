@@ -1,6 +1,6 @@
 <p align="center"><img src="res/batteryhub.png" width="112" alt="BatteryHub 图标"></p>
 
-<h1 align="center">BatteryHub v1.6</h1>
+<h1 align="center">BatteryHub v1.7 中文版</h1>
 
 <p align="center">
 <b>BatteryHub 在 Windows 上的超轻量 Rust 实现。</b><br>
@@ -32,26 +32,28 @@
 
 > **本仓库（中文版）来源与致谢**
 >
-> - 本仓库 fork 自 **[@ferloom](https://github.com/ferloom) 的 [Wireless-Device-Battery-Monitor](https://github.com/ferloom/Wireless-Device-Battery-Monitor)**（BatteryHub v1.6 的 Rust 重写版），在其基础上把界面文字与文档翻译成简体中文。
+> - 本仓库 fork 自 **[@ferloom](https://github.com/ferloom) 的 [Wireless-Device-Battery-Monitor](https://github.com/ferloom/Wireless-Device-Battery-Monitor)**（BatteryHub v1.6 的 Rust 重写版）。
 > - 再往前，原始项目是 **[@krisgfx9](https://github.com/krisgfx9) 的 [Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor)**（C++ 版 BatteryHub）。
-> - **想法、外观设计和全部设备协议都出自 krisgfx9 与 ferloom，在此衷心感谢两位作者的无私分享。** 本仓库只做中文本地化，不改变任何功能；完整致谢见 [CREDITS.md](CREDITS.md)。
+> - **想法、外观设计和全部设备协议都出自 krisgfx9 与 ferloom，在此衷心感谢两位作者的无私分享。** 完整致谢见 [CREDITS.md](CREDITS.md)。
+> - 在上游 v1.6 的基础上，本仓库做了两件事：**一是把界面文字与文档翻译成简体中文；二是加入「国产小众设备适配」**（见[下文](#国产小众设备适配)）——品牌识别表、中颖 / DriverCore 两族芯片的通用探测，以及可用 `devices.ini` 自助添加设备的自定义规则。除此之外不改变原有功能，也没有删改上游的任何驱动，原有设备的表现和更新 / 回退流程保持不变。
 >
-> 本文档是上游英文 README 的中文翻译版。上游项目：<https://github.com/ferloom/Wireless-Device-Battery-Monitor>。代码中的变量名、注册表键名、窗口类名等保持英文，以便与上游同步。
+> 本文档是上游英文 README 的中文翻译版，外加这项新功能的说明。上游项目：<https://github.com/ferloom/Wireless-Device-Battery-Monitor>。代码中的变量名、注册表键名、窗口类名等保持英文，以便与上游同步。
 
 ---
 
 ## 目录
 
-[下载](#下载) · [新版本出问题？回退并反馈](#新版本出问题回退并反馈) · [功能](#功能) · [使用方法](#使用方法) · [安装、更新与卸载](#安装更新与卸载) · [与原版的资源占用对比](#与原版的资源占用对比) · [任务栏兼容性](#任务栏兼容性) · [支持的设备](#支持的设备) · [暂不支持的设备](#暂不支持的设备) · [测试](#测试) · [从源码构建](#从源码构建) · [许可证](#许可证)
+[下载](#下载) · [新版本出问题？回退并反馈](#新版本出问题回退并反馈) · [功能](#功能) · [使用方法](#使用方法) · [安装、更新与卸载](#安装更新与卸载) · [与原版的资源占用对比](#与原版的资源占用对比) · [任务栏兼容性](#任务栏兼容性) · [支持的设备](#支持的设备) · [国产小众设备适配](#国产小众设备适配) · [暂不支持的设备](#暂不支持的设备) · [测试](#测试) · [从源码构建](#从源码构建) · [许可证](#许可证)
 
 ## 下载
 
-从[**最新发布**](../../releases/latest)获取 **`BatteryHub-Taskbar-Setup-v1.6.exe`**，运行后点击 **安装**。
+从[**最新发布**](../../releases/latest)获取 **`BatteryHub-Taskbar-Setup-v1.7.exe`**，运行后点击 **安装**。
 
 - 不需要管理员权限（按用户安装）。
 - 已经装过？用右键菜单里的*检查更新...*，或者运行新的安装程序并点击 **更新**。
 - 即使你还装着原版 C++ BatteryHub，它也不会与之冲突。
 - 由于文件没有代码签名，Windows 可能显示 SmartScreen 警告：*更多信息* → *仍要运行*。
+- **注意：** 菜单里的*检查更新...* 与*安装其他版本...* 仍然查询上游仓库（英文版），所以它们不会提示中文版的新版本。中文版的新版本请到本仓库的 [**Releases**](../../releases) 页下载。
 
 ## 新版本出问题？回退并反馈
 
@@ -89,6 +91,7 @@
 - **随 Windows 启动**和**自动检查更新**都能直接在菜单里开关。
 - **检查更新**（菜单内），下载经过 SHA-256 校验。
 - **请求支持某个设备**（菜单内）：选择一个没显示的设备，会打开一个已填好所需信息的 GitHub issue。
+- **国产小众设备适配**（v1.7 新增，见[下文](#国产小众设备适配)）：内置品牌识别表、中颖 / DriverCore 两族芯片的通用探测，以及用 `devices.ini` 自助添加设备的自定义规则（菜单 → *自定义设备规则（devices.ini）...*）。
 - **体积极小：** 空闲时内存约 0.1–0.2 MB（任务管理器的“内存”列），每分钟约 0.1 秒 CPU。
 - **只允许运行一份：** BatteryHub 已在运行时再次启动不会有任何动作。
 - **左侧或右侧任务栏**（Windows 11）：小部件变成通知区域上方的一列，悬停卡片在任务栏旁边弹出。
@@ -250,9 +253,67 @@ BatteryHub 也会出现在**设置 → 应用 → 已安装的应用**中（名�
 
 设备没显示？用右键菜单里的*请求支持某个设备...*（见上文）。原项目里的更多品牌可以每个文件一款地加到 `src/drivers/`；欢迎提交 pull request（ROCCAT、FNATIC BOLT 和 HyperX Cloud Flight 驱动就是这样来的）。可以用 `HKCU\Software\WirelessBattery\IgnoreDevices`（`VID:PID` 列表，与原版同一项设置）排除设备。
 
+## 国产小众设备适配
+
+国内大量无线外设是贴牌的：同一个接收器换个外壳、换个品牌名、换个 USB ID 就上市，公开的协议资料往往只有大牌才有。从 v1.7 起，本仓库在原有驱动之外加了三层“兜底”，专门照顾这类设备——**全部只读**（读 feature / input 报告），认不出就什么都不做，绝不向设备写配置：
+
+| 层 | 做什么 | 覆盖谁 |
+|---|---|---|
+| **品牌识别表**（`src/brands.rs`） | 用 USB 厂商号和产品串里的中英文关键词，给设备补上中文品牌名与类型：雷柏、双飞燕、达尔优、黑爵、狼蛛、迈从、攻击鲨、达摩鲨、万灵、ATK 艾石头、英菲克、富勒、摩豹、前行者、飞智、八位堂、机械师、雷神、华为、小米、联想……，以及中颖 / 合泰 / 凌阳 / Xenta / 亦讯 / Areson / DriverCore 这些常被贴牌的方案商 | 原来只显示 “Wireless device / ?” 的白牌设备 |
+| **芯片族通用探测**（`src/drivers/chipfamily.rs`） | 不看 VID:ID，只看 HID 集合的“形状”，再按应答格式校验：中颖方案（`FF00:0001`、8 字节 feature 报告）、DriverCore `373E` 一族（`FFFF`、65 字节 feature 报告）。答不上来立刻放弃，探测过的设备 10 分钟内不再打扰 | 换 ID 不换方案的白牌 2.4 GHz 接收器 |
+| **自定义设备规则**（`devices.ini`） | 你自己写一条规则，说明“先发哪一帧查询、读哪个报告、电量在第几个字节、怎么换算”，BatteryHub 就照做 | 内置驱动与上面两层都没覆盖的设备 |
+
+### 自定义设备规则 `devices.ini`
+
+文件在 `%LOCALAPPDATA%\BatteryHub\Taskbar\devices.ini`：
+
+- 第一次需要时（右键菜单 → **自定义设备规则（devices.ini）...**，或运行 `batteryhub-taskbar.exe --rules`）会自动写出一份带中文说明的模板，可以用记事本直接改；
+- 改完保存就生效，下一次读电量时用上（默认 1 分钟，或者右键 → *刷新电量*），不用重装、不用重启；
+- 模板整段都是注释，所以打开时是 0 条规则，不会凭空多出设备；写错的规则只会被跳过，并在打开文件时列出来告诉你第几行。
+
+一条完整的例子（白牌接收器：先发 `05 90` 查询帧，电量在 `05` 号报告的偏移 3）：
+
+```ini
+[我的白牌鼠标]
+vid=24AE
+pid=2000
+usage=FF00:0001
+report=feature
+report_id=05
+query=05 90
+wait_ms=120
+offset=3
+scale=raw
+charging_offset=2
+charging_value=10
+zero_off=1
+kind=mouse
+name=我的雷柏鼠标
+```
+
+| 键 | 必填 | 说明 |
+|---|---|---|
+| `vid` / `pid` | ✔ | USB 厂商号 / 产品号，十六进制 |
+| `offset` | ✔ | 电量字节下标，**从报告 ID 起算**（0 就是报告 ID 自己） |
+| `usage` | | 只在 `页面:用途` 为该值的集合上读；不写就在厂商集合（`FF00`–`FFFF`）里找 |
+| `report` | | `feature`（默认）或 `input` |
+| `report_id` | | 报告 ID，默认 `0` |
+| `query` | | 读取前先发的查询帧（十六进制字节）；不需要就不写 |
+| `wait_ms` | | 发完查询帧等多少毫秒再读，默认 `100` |
+| `scale` | | `raw`（0–100，默认）/ `full255`（0–255 按比例）/ `minmax`（配合 `range=最小值,最大值`，例如电压） |
+| `charging_offset` + `charging_value` | | 该字节等于这个值就算“充电中”，两者要一起写 |
+| `zero_off` | | 电量为 0 当作“设备已关机”（接收器在，设备没开） |
+| `kind` | | `mouse` / `keyboard` / `headset` / `gamepad` / `phone` / `microphone` / `other`（也认中文） |
+| `name` | | 显示名；不写就用设备自己的产品串 |
+| `force` | | `force=1` 时这条规则排在所有内置驱动之前（内置驱动认错型号时用） |
+
+字节位置怎么找：运行 `batteryhub-taskbar.exe --listen VID:PID`（例如 `--listen 24AE:2000`），它会把该设备每个 HID 集合的输入 / feature 报告打印到一个记事本文件里，字节顺序和 `offset` 的算法一致；那一步只读，不向设备写任何东西（唯一会“写”的地方是你自己写在规则里的 `query`）。
+
+适配好了欢迎把规则贴到 [Issues](../../issues/new)：下一版就能做成内置驱动，别人也不用再自己写。
+
 ## 暂不支持的设备
 
-这些是被请求过但目前无法支持的设备，以及原因。其中大多数仍可以通过**蓝牙**显示电量（如果设备支持）：只要 Windows 在*设置 → 蓝牙和设备*里显示电量，BatteryHub 就会显示。如果你知道其中某款设备如何上报电量（抓包、能读取它的项目），请在其 issue 下留言；`batteryhub-taskbar.exe --listen VID:PID` 会记录接收器发来的内容，且不会向它发送任何东西。
+这些是被请求过但目前无法支持的设备，以及原因。其中大多数仍可以通过**蓝牙**显示电量（如果设备支持）：只要 Windows 在*设置 → 蓝牙和设备*里显示电量，BatteryHub 就会显示。如果你知道其中某款设备如何上报电量（抓包、能读取它的项目），请在其 issue 下留言；`batteryhub-taskbar.exe --listen VID:PID` 会记录接收器发来的内容，且不会向它发送任何东西。手上就有其中一台的话，也可以先用[自定义设备规则](#自定义设备规则-devicesini)自己把电量读出来：`devices.ini` 里写一条规则即可，不用改代码、不用等新版本。
 
 | 设备 | VID:PID | 原因 | Issue |
 |---|---|---|---|
@@ -314,7 +375,7 @@ BatteryHub 也会出现在**设置 → 应用 → 已安装的应用**中（名�
 .\build-release.ps1
 ```
 
-这会先构建程序，再构建内嵌该程序的安装程序（`installer/`、`BH_PAYLOAD_DIR`），并生成 `release\BatteryHub-Taskbar-Setup-v1.6.exe` 和 `SHA256SUMS.txt`。版本号来自 `VERSION` 文件（最多四段，例如 `1.0.1.1`）。
+这会先构建程序，再构建内嵌该程序的安装程序（`installer/`、`BH_PAYLOAD_DIR`），并生成 `release\BatteryHub-Taskbar-Setup-v1.7.exe` 和 `SHA256SUMS.txt`。版本号来自 `VERSION` 文件（最多四段，例如 `1.0.1.1`）。
 
 | 路径 | 内容 |
 |---|---|

@@ -97,13 +97,12 @@ pub fn poll(ctx: &mut PollContext) {
             continue; // already shown with Windows' Bluetooth level
         }
         let Some(pct) = read_battery(c) else { continue };
-        let mut name = hid::product_string(c);
-        if name.is_empty() {
-            name = "Wireless device".into();
-        }
+        let product = hid::product_string(c);
+        // 国内小品牌（雷柏 / 迈从 / 中颖方案 …）由品牌表补上中文名，认不出就沿用产品串。
+        let name = crate::brands::display_name(&product, c.vid).unwrap_or_else(|| if product.trim().is_empty() { "无线设备".into() } else { product.clone() });
         let mut kind = hid::kind_from_collections(&ctx.colls, c.vid, c.pid);
         if kind == DeviceKind::Other {
-            kind = guess_kind(&name);
+            kind = crate::brands::kind_from_text(&name).or_else(|| crate::brands::kind_from_text(&product)).unwrap_or_else(|| guess_kind(&name));
         }
         let s = DeviceStatus { key: format!("hid:{}:{}", hex4(c.vid), hex4(c.pid)), name, via: "HID".into(), kind, percent: pct, ..Default::default() };
         ctx.add(DeviceStatus { hw: Some((c.vid, c.pid)), ..s }, c.vid, c.pid);

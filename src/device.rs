@@ -253,6 +253,7 @@ pub fn poll_hardware(ids: &[(u16, u16)]) -> Vec<DeviceStatus> {
         return Vec::new();
     }
     let mut ctx = PollContext { colls, ..Default::default() };
+    drivers::rule::poll(&mut ctx, true);
     drivers::steelseries::poll(&mut ctx);
     drivers::logitech_g321::poll(&mut ctx);
     drivers::logitech_prox2::poll(&mut ctx);
@@ -299,6 +300,8 @@ pub fn poll_hardware(ids: &[(u16, u16)]) -> Vec<DeviceStatus> {
     drivers::endgame_4k::poll(&mut ctx);
     drivers::mchose_glw::poll(&mut ctx);
     drivers::playstation::poll(&mut ctx);
+    drivers::rule::poll(&mut ctx, false);
+    drivers::chipfamily::poll(&mut ctx);
     drivers::generic::poll(&mut ctx);
     ctx.out
 }
@@ -376,6 +379,8 @@ fn poll_with(colls: Vec<HidColl>) -> Vec<DeviceStatus> {
     if !ignored.is_empty() {
         ctx.colls.retain(|c| !ignored.contains(&(c.vid, c.pid)));
     }
+    // User rules marked force=1 go before everything, so a user can correct a built-in driver.
+    drivers::rule::poll(&mut ctx, true);
     // Vendor drivers first, generic fallbacks last (same order as the original chain).
     drivers::steelseries::poll(&mut ctx);
     drivers::logitech_g321::poll(&mut ctx);
@@ -425,6 +430,8 @@ fn poll_with(colls: Vec<HidColl>) -> Vec<DeviceStatus> {
     drivers::playstation::poll(&mut ctx);
     drivers::airpods::poll(&mut ctx);
     drivers::bluetooth::poll(&mut ctx);
+    drivers::rule::poll(&mut ctx, false);
+    drivers::chipfamily::poll(&mut ctx);
     drivers::generic::poll(&mut ctx);
     drivers::xinput::poll(&mut ctx);
     ctx.out

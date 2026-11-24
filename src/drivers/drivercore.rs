@@ -16,7 +16,7 @@ use crate::hid::{self, HidColl, HidDev};
 use crate::util::{hex4, sleep_ms};
 
 const VID: u16 = 0x373E;
-const QUERY: [u8; 7] = [0x00, 0x00, 0x00, 0x02, 0x02, 0x00, 0x83];
+pub const QUERY: [u8; 7] = [0x00, 0x00, 0x00, 0x02, 0x02, 0x00, 0x83];
 
 #[derive(Debug, PartialEq)]
 pub enum Reply {

@@ -716,12 +716,7 @@ impl Dash {
                 },
             ),
             ('\u{E916}', "预计剩余时间", tl, tl_note),
-            (
-                '\u{E9D2}',
-                "平均放电速率",
-                st.discharge_rate.map(fmt_rate),
-                "使用电池时每小时掉电的百分比。监控中断的时段不计入。".into(),
-            ),
+            ('\u{E9D2}', "平均放电速率", st.discharge_rate.map(fmt_rate), "使用电池时每小时掉电的百分比。监控中断的时段不计入。".into()),
             (
                 '\u{E945}',
                 "平均充电速率",

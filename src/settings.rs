@@ -140,11 +140,9 @@ pub fn append_device_menus(menu: HMENU, devices: &[DeviceStatus], settings_key: 
             let id = |item: usize| MENU_BASE + i * STRIDE + item;
             let _ = AppendMenuW(sub, MF_STRING | MF_GRAYED, 0, &hs(&format!("{} - {}", d.name, d.charge_text())));
             let _ = AppendMenuW(sub, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
-            for (item, label, g) in [
-                (ITEM_DASHBOARD, "仪表盘...", glyph::DASHBOARD),
-                (ITEM_HISTORY, "电量历史", glyph::HISTORY),
-                (ITEM_STATS, "统计", glyph::STATISTICS),
-            ] {
+            for (item, label, g) in
+                [(ITEM_DASHBOARD, "仪表盘...", glyph::DASHBOARD), (ITEM_HISTORY, "电量历史", glyph::HISTORY), (ITEM_STATS, "统计", glyph::STATISTICS)]
+            {
                 let _ = AppendMenuW(sub, MF_STRING, id(item), &hs(label));
                 icons.set(sub, id(item) as u32, false, g);
             }

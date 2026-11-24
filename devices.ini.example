@@ -1,0 +1,49 @@
+# BatteryHub 自定义设备规则（devices.ini）示例
+#
+# 把这份文件复制到 %LOCALAPPDATA%\BatteryHub\Taskbar\devices.ini（或者在 BatteryHub 右键菜单里
+# 点“自定义设备规则（devices.ini）...”，程序会自己写出一份同样的模板），然后按自己的设备改。
+#
+# 每个 [设备名] 小节是一条规则，小节里一行一个 key=value，# 开头是注释。
+# 只有 vid / pid / offset 是必须的。改完保存即可，下一次读电量（默认 1 分钟，或右键 → 刷新电量）就生效。
+#
+# 可用的键：
+#   vid               USB 厂商号（十六进制，4 位）          例：24AE
+#   pid               产品号（十六进制，4 位）              例：2000
+#   usage             只在 页面:用途 为该值的集合上读        例：FF00:0001（不写就在厂商集合里找）
+#   report            feature 或 input                     例：feature（默认）
+#   report_id         报告 ID                              例：05（默认 0）
+#   query             读取前先发的查询帧（十六进制字节）      例：05 90（不需要就不写）
+#   wait_ms           发完查询帧等多少毫秒再读               例：120（默认 100）
+#   offset            电量字节的下标，从报告 ID 起算（0 就是报告 ID 自己）  例：3
+#   scale             raw（0-100）/ full255（0-255 按比例）/ minmax     例：raw（默认）
+#   range             scale=minmax 时的原始范围              例：3000,4200
+#   charging_offset   充电标志字节的下标                     例：2
+#   charging_value    该字节等于这个十六进制值就算“充电中”    例：10
+#   zero_off          电量为 0 当作“设备已关机”              例：1
+#   kind              mouse / keyboard / headset / gamepad / phone / microphone / other
+#   name              显示的名字（不写就用设备自己的产品串）   例：我的雷柏鼠标
+#   force             force=1 时这条规则排在所有内置驱动之前（内置驱动认错型号时用）
+#
+# 字节位置怎么找：在命令行运行
+#   batteryhub-taskbar.exe --listen 24AE:2000
+# 它会把该设备所有 HID 集合的输入 / feature 报告打印到一个文本文件里，照着里面的字节位置填
+# offset 就行（那个文件里的字节从报告 ID 起算，和这里的 offset 一致）。
+# 请用 UTF-8 保存这个文件（Windows 11 记事本的默认编码就是 UTF-8）。
+#
+# 下面这条规则是例子，把数值改成自己设备的才会生效；不想用就把整段删掉。
+
+[我的白牌鼠标]
+vid=24AE
+pid=2000
+usage=FF00:0001
+report=feature
+report_id=05
+query=05 90
+wait_ms=120
+offset=3
+scale=raw
+charging_offset=2
+charging_value=10
+zero_off=1
+kind=mouse
+name=我的雷柏鼠标

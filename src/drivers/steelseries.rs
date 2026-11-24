@@ -14,11 +14,7 @@ fn write_read(d: &HidDev, req: &[u8], timeout_ms: u32) -> Option<Vec<u8>> {
 
 fn headset(pid: u16, name: &str) -> DeviceStatus {
     DeviceStatus {
-        key: format!("steelseries:{}", hex4(pid)),
-        name: name.into(),
-        kind: DeviceKind::Headset,
-        via: "2.4 GHz 接收器".into(),
-        ..Default::default()
+        key: format!("steelseries:{}", hex4(pid)), name: name.into(), kind: DeviceKind::Headset, via: "2.4 GHz 接收器".into(), ..Default::default()
     }
 }
 

@@ -1,6 +1,6 @@
 # 中文化说明
 
-本仓库是 [ferloom/Wireless-Device-Battery-Monitor](https://github.com/ferloom/Wireless-Device-Battery-Monitor)（BatteryHub v1.6，Rust 版）的中文版。代码保持与上游同构，只翻译面向用户的文字，方便以后和上游同步。
+本仓库是 [ferloom/Wireless-Device-Battery-Monitor](https://github.com/ferloom/Wireless-Device-Battery-Monitor)（BatteryHub v1.6，Rust 版）的中文版。代码保持与上游同构，翻译只动面向用户的文字，方便以后和上游同步；翻译之外只多加了一项独立功能——**国产小众设备适配**（v1.7，见下节），它全部是新文件，对上游代码只做了四处插入，删掉即可回到纯翻译版。
 
 ## 翻译了什么
 
@@ -17,6 +17,19 @@
 | 设备状态与单位（`src/device.rs`、`src/stats.rs`） | 鼠标 / 耳机 / 键盘 / 手柄 / 手机 / 麦克风 / 设备；未连接 / 充电中 / 已充满 / 休眠 / 使用电池；“分钟 / 小时 / 天 / %每小时” |
 | 连接方式（各 `src/drivers/*.rs`） | `2.4 GHz 接收器`、`USB 线缆` 等少量通用描述 |
 | 程序文件元数据 | `FileDescription`（“无线设备电量监视器”“BatteryHub 安装程序”） |
+
+## 本仓库新增的功能（v1.7，不是翻译）
+
+「国产小众设备适配」，面向贴牌 / 白牌无线外设：
+
+| 文件 | 作用 |
+|---|---|
+| `src/brands.rs` | 品牌识别表：USB 厂商号、产品串里的中英文品牌关键词、中文设备类型关键词；给设备补中文名与类型 |
+| `src/userrules.rs` | `devices.ini` 的模板、解析（含错误行号）、读取缓存与字节换算；`%LOCALAPPDATA%\BatteryHub\Taskbar\devices.ini` |
+| `src/drivers/rule.rs` | 应用用户规则（只读 GetFeature / GetInputReport，可选一次 SetFeature 查询帧） |
+| `src/drivers/chipfamily.rs` | 芯片族通用探测：按集合形状 + 应答格式校验，覆盖中颖 Sino Wealth 与 DriverCore `373E`；失败后 10 分钟内不再重试 |
+
+对上游代码的插入只有四处：`src/lib.rs`、`src/drivers/mod.rs` 的模块声明，`src/device.rs` 驱动链里的两次 `rule::poll` 与一次 `chipfamily::poll`，`src/drivers/generic.rs` 里改用品牌表取名字和类型，`src/bin/taskbar.rs` 的一个菜单项（`ID_DEVICE_RULES`）和 `--rules`。上游的驱动、协议、界面布局、设置键都没有改动。
 
 ## 故意保持英文的部分
 
@@ -40,7 +53,7 @@ cargo test --lib
 .\build-release.ps1    # 需要 Visual Studio Build Tools 与 Windows SDK
 ```
 
-> 本次实测结果：`cargo test --lib` 有 210 个用例通过，6 个失败，失败原因都是环境权限，与翻译无关：
+> 本次实测结果（含新增的 15 个用例）：`cargo test --lib` 有 225 个用例通过，6 个失败，失败原因都是环境权限：
 >
 > - 4 个向 `%TEMP%` 建目录 / 写文件（`history::tests::atomic_write_*`、`install::safety_tests::file_is_replaced_*`、`a_file_that_cannot_be_replaced_*`）。把 `TEMP` 指到工作区内的可写目录后这 4 个立即通过。
 > - 2 个需要写 `HKCU`（`settings::tests::names_survive_in_the_registry`、`install::safety_tests::values_lists_past_large_values`），在受限令牌的终端里无法创建测试用的注册表键。
