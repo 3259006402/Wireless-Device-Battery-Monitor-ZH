@@ -92,7 +92,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: format!("atknk:{}", hex4(NANO_DONGLE)),
         name: "ATK / VXE mouse".into(), // the dongle is shared by several models
         kind: DeviceKind::Mouse,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         percent: level,
         charging,
         hw: Some((VID, NANO_DONGLE)),

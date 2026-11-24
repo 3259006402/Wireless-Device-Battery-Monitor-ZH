@@ -80,7 +80,7 @@ const FALLBACK_AFTER_TICKS: u32 = 3;
 const PBT_APMRESUMEAUTOMATIC: usize = 0x0012;
 const PBT_APMSUSPEND: usize = 0x0004;
 /// Battery refresh intervals offered in the menu, in minutes.
-const INTERVALS: [(u32, &str); 5] = [(1, "1 minute"), (5, "5 minutes"), (10, "10 minutes"), (30, "30 minutes"), (60, "1 hour")];
+const INTERVALS: [(u32, &str); 5] = [(1, "1 分钟"), (5, "5 分钟"), (10, "10 分钟"), (30, "30 分钟"), (60, "1 小时")];
 const ID_INTERVAL_BASE: usize = 10;
 const ID_ON_CHANGE: usize = 20;
 const MIN_GRACE_SEC: u64 = 150;
@@ -153,13 +153,13 @@ fn demo_devices() -> Vec<DeviceStatus> {
     let dev = |key: &str, name: &str, kind: DeviceKind, percent: i32, charging: bool| DeviceStatus {
         key: key.into(),
         name: name.into(),
-        via: "Demo (BH_DEMO)".into(),
+        via: "演示 (BH_DEMO)".into(),
         kind,
         percent,
         charging,
         ..Default::default()
     };
-    vec![dev("demo:headset", "Demo headset", DeviceKind::Headset, 38, true), dev("demo:mouse", "Demo mouse with a longer name", DeviceKind::Mouse, 64, false)]
+    vec![dev("demo:headset", "演示耳机", DeviceKind::Headset, 38, true), dev("demo:mouse", "演示鼠标（名字较长）", DeviceKind::Mouse, 64, false)]
 }
 
 /// A dashboard window is open (it shows the history file, so that is kept current).
@@ -1172,7 +1172,7 @@ impl App {
             })
             .collect();
         if wanted.is_empty() {
-            wanted.push(("\u{0}none".into(), "-".into(), normal, -1, "BatteryHub: no devices found".into()));
+            wanted.push(("\u{0}none".into(), "-".into(), normal, -1, "BatteryHub：未找到设备".into()));
         }
         let keep: HashSet<String> = wanted.iter().map(|w| w.0.clone()).collect();
         let stale: Vec<String> = self.tray.keys().filter(|k| !keep.contains(*k)).cloned().collect();
@@ -1445,16 +1445,16 @@ impl App {
         // Connection and state.
         let mut line = d.via.clone();
         if d.charging {
-            line.push_str(if d.full { " · Full" } else { " · Charging" });
+            line.push_str(if d.full { " · 已充满" } else { " · 充电中" });
         } else if d.asleep {
-            line.push_str(" · Asleep");
+            line.push_str(" · 休眠");
         }
         let via = mask(&line, small_f, light);
         cv.draw(&via, pad, y, dim, 255);
         y += px(30.0);
 
         // Last 24 hours (the history keeps 7 days; the dashboard shows all of it).
-        let title = mask("Last 24 hours", small_f, light);
+        let title = mask("最近 24 小时", small_f, light);
         cv.draw(&title, pad, y, dim, 255);
         y += px(22.0);
         let (x0, x1, top, bottom) = (pad, w - pad, y, y + chart_h);
@@ -1490,9 +1490,9 @@ impl App {
             cv.disc(to_x(last.t), to_y(last.level), px(3.5), if last.charging() { charge_c } else { accent });
         }
         y = bottom + px(10.0);
-        let ago = mask("24h ago", small_f, light);
+        let ago = mask("24 小时前", small_f, light);
         cv.draw(&ago, x0, y, dim, 255);
-        let nowm = mask("Now", small_f, light);
+        let nowm = mask("现在", small_f, light);
         cv.draw(&nowm, x1 - nowm.w, y, dim, 255);
         // As much room under the bottom labels as above the header.
         let h = (y + px(14.0) + px(18.0)).min(tall);
@@ -1712,20 +1712,20 @@ impl App {
     fn tip_text(&self, i: usize) -> String {
         let devices = self.visible();
         let Some(d) = devices.get(i) else {
-            return "BatteryHub: no devices found".into();
+            return "BatteryHub：未找到设备".into();
         };
         let level = d.level();
         let numeric = level.ends_with('%');
         let state = if d.asleep {
-            " (asleep)"
+            "（休眠）"
         } else if d.is_full() && numeric {
-            " (full)"
+            "（已充满）"
         } else if d.charging && numeric {
-            " (charging)"
+            "（充电中）"
         } else {
             ""
         };
-        format!("{}: {level}{state}", d.name)
+        format!("{}：{level}{state}", d.name)
     }
 
     /// Mouse at (x, y) on a strip: the device under it (along x, or along y on a vertical taskbar).
@@ -1909,9 +1909,9 @@ impl App {
         d.uCallbackMessage = WM_TRAY;
         d.hIcon = icon;
         d.dwInfoFlags = NIIF_WARNING;
-        ui::fill_wide(&mut d.szTip, &format!("{name}: {level}%"));
-        ui::fill_wide(&mut d.szInfoTitle, &format!("{name}: battery at {level}%"));
-        ui::fill_wide(&mut d.szInfo, "Charge it soon. BatteryHub warns once per discharge (right-click the device to turn this off).");
+        ui::fill_wide(&mut d.szTip, &format!("{name}：{level}%"));
+        ui::fill_wide(&mut d.szInfoTitle, &format!("{name}：电量仅剩 {level}%"));
+        ui::fill_wide(&mut d.szInfo, "请尽快充电。BatteryHub 每次放电只提醒一次（右键点击该设备可关闭此提醒）。");
         unsafe {
             if !Shell_NotifyIconW(NIM_MODIFY, &d).as_bool() {
                 let _ = Shell_NotifyIconW(NIM_ADD, &d);
@@ -2000,7 +2000,7 @@ impl App {
 
 /// A check or download is running (the menu item is greyed out meanwhile).
 static UPDATE_BUSY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-const UPDATE_TITLE: windows::core::PCWSTR = w!("BatteryHub - Check for updates");
+const UPDATE_TITLE: windows::core::PCWSTR = w!("BatteryHub - 检查更新");
 
 /// Runs `work` on a worker thread and posts its boxed result to `hwnd` as `msg`.
 fn post_from_thread<T: Send + 'static>(hwnd: HWND, msg: u32, work: impl FnOnce() -> T + Send + 'static) {
@@ -2054,7 +2054,7 @@ fn on_update_checked(main: HWND, check: batteryhub::update::Check) {
             UPDATE_BUSY.store(false, std::sync::atomic::Ordering::Relaxed);
             message(
                 main,
-                &format!("No new updates.\n\nYou have the latest version ({}).\nLatest release on GitHub: {}.", version_label(), label_of(&latest)),
+                &format!("没有新更新。\n\n你已是最新版本（{}）。\nGitHub 上的最新发布：{}。", version_label(), label_of(&latest)),
                 MB_OK | MB_ICONINFORMATION,
             );
         }
@@ -2062,7 +2062,7 @@ fn on_update_checked(main: HWND, check: batteryhub::update::Check) {
             UPDATE_BUSY.store(false, std::sync::atomic::Ordering::Relaxed);
             message(
                 main,
-                &format!("Could not check for updates:\n{e}\n\nNew versions are also on GitHub:\nhttps://github.com/{}/releases", batteryhub::update::REPO),
+                &format!("检查更新失败：\n{e}\n\n新版本也会发布在 GitHub：\nhttps://github.com/{}/releases", batteryhub::update::REPO),
                 MB_OK | MB_ICONWARNING,
             );
         }
@@ -2073,7 +2073,7 @@ fn on_update_checked(main: HWND, check: batteryhub::update::Check) {
         }
         Check::Available(r) => {
             let text = format!(
-                "A new update is available:\n\n        {}  ->  {}\n\nDo you want to update now?\n\nThe setup is downloaded from GitHub, checked against the release's SHA-256 checksum and started; it keeps your settings and autostart.",
+                "发现新更新：\n\n        {}  ->  {}\n\n现在要更新吗？\n\n安装程序会从 GitHub 下载，用该发布的 SHA-256 校验和核对后启动；你的设置和开机启动项都会保留。",
                 version_label(),
                 label_of(&r.version)
             );
@@ -2292,11 +2292,11 @@ fn monitor_id(bar: HWND) -> String {
 
 /// "Display 2 (left)": the number Windows gives the display and where it is next to the main one.
 fn monitor_label(bar: HWND) -> String {
-    let Some(mi) = monitor_info(bar) else { return "Other monitor".into() };
+    let Some(mi) = monitor_info(bar) else { return "其他显示器".into() };
     let device = batteryhub::util::from_wide(&mi.szDevice);
     let mut label = match device.find("DISPLAY") {
-        Some(i) => format!("Display {}", &device[i + 7..]),
-        None => "Other monitor".into(),
+        Some(i) => format!("显示器 {}", &device[i + 7..]),
+        None => "其他显示器".into(),
     };
     unsafe {
         let mon = MonitorFromPoint(POINT { x: 0, y: 0 }, MONITOR_DEFAULTTOPRIMARY);
@@ -2306,13 +2306,13 @@ fn monitor_label(bar: HWND) -> String {
             let dx = (m.left + m.right - p.left - p.right) / 2;
             let dy = (m.top + m.bottom - p.top - p.bottom) / 2;
             let side = if dx.abs() >= dy.abs() {
-                if dx < 0 { "left" } else { "right" }
+                if dx < 0 { "左" } else { "右" }
             } else if dy < 0 {
-                "above"
+                "上方"
             } else {
-                "below"
+                "下方"
             };
-            label += &format!(" ({side})");
+            label += &format!("（{side}）");
         }
     }
     label
@@ -2402,9 +2402,9 @@ unsafe fn show_menu() {
             if !devices.is_empty() {
                 let _ = AppendMenuW(menu, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
             }
-            let _ = AppendMenuW(menu, MF_STRING, ID_REFRESH_DEVICES, w!("Refresh devices"));
+            let _ = AppendMenuW(menu, MF_STRING, ID_REFRESH_DEVICES, w!("刷新设备"));
             icons.set(menu, ID_REFRESH_DEVICES as u32, false, ui::glyph::SYNC);
-            let _ = AppendMenuW(menu, MF_STRING, ID_REFRESH_LEVELS, w!("Refresh battery levels"));
+            let _ = AppendMenuW(menu, MF_STRING, ID_REFRESH_LEVELS, w!("刷新电量"));
             icons.set(menu, ID_REFRESH_LEVELS as u32, false, ui::glyph::REFRESH);
             let _ = AppendMenuW(menu, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
             // How often the battery levels are read, and whether a device change triggers a read.
@@ -2415,22 +2415,22 @@ unsafe fn show_menu() {
                     let _ = AppendMenuW(sub, MF_STRING | check, ID_INTERVAL_BASE + j, &windows::core::HSTRING::from(*label));
                 }
                 let n = GetMenuItemCount(Some(menu));
-                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("Refresh battery every"));
+                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("电量刷新间隔"));
                 icons.set(menu, n as u32, true, ui::glyph::HISTORY);
             }
             let on_change = if refresh_on_change() { MF_CHECKED } else { MF_UNCHECKED };
-            let _ = AppendMenuW(menu, MF_STRING | on_change, ID_ON_CHANGE, w!("Refresh when a device connects or disconnects"));
+            let _ = AppendMenuW(menu, MF_STRING | on_change, ID_ON_CHANGE, w!("设备连接或断开时刷新"));
             let _ = AppendMenuW(menu, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
             let check = |on: bool| if on { MF_CHECKED } else { MF_UNCHECKED };
             // Look of the widget: plate behind it, position, and which monitors show it.
             let (choice, offset, background, offset_y, icons_mode) =
                 with_app(|a| (a.choice.clone(), a.offset, a.background, a.offset_y, a.icons_mode)).unwrap_or_default();
-            let _ = AppendMenuW(menu, MF_STRING | check(icons_mode), ID_ICONS_MODE, w!("Show as notification-area icons (Windows arranges them)"));
-            let _ = AppendMenuW(menu, MF_STRING | check(background), ID_BACKGROUND, w!("Background behind taskbar text (for translucent taskbars)"));
+            let _ = AppendMenuW(menu, MF_STRING | check(icons_mode), ID_ICONS_MODE, w!("显示为通知区域图标（由 Windows 排列）"));
+            let _ = AppendMenuW(menu, MF_STRING | check(background), ID_BACKGROUND, w!("任务栏文字底层背景（用于半透明任务栏）"));
             if let Ok(sub) = CreatePopupMenu() {
                 let mut checked = ID_POSITION_CUSTOM;
                 for (i, px) in POSITION_OFFSETS.iter().enumerate() {
-                    let label = if *px == 0 { "Next to the notification area".to_string() } else { format!("{px} px to the left") };
+                    let label = if *px == 0 { "紧邻通知区域".to_string() } else { format!("左移 {px} 像素") };
                     let _ = AppendMenuW(sub, MF_STRING, ID_POSITION_FIRST + i, &windows::core::HSTRING::from(label));
                     if *px == offset {
                         checked = ID_POSITION_FIRST + i;
@@ -2438,21 +2438,21 @@ unsafe fn show_menu() {
                 }
                 if checked == ID_POSITION_CUSTOM {
                     // A value set by hand in the registry (TaskbarOffset).
-                    let label = format!("Custom ({offset} px, TaskbarOffset in the registry)");
+                    let label = format!("自定义（{offset} 像素，注册表 TaskbarOffset）");
                     let _ = AppendMenuW(sub, MF_STRING | MF_GRAYED, ID_POSITION_CUSTOM, &windows::core::HSTRING::from(label));
                 }
                 let _ = CheckMenuRadioItem(sub, ID_POSITION_FIRST as u32, ID_POSITION_CUSTOM as u32, checked as u32, MF_BYCOMMAND.0);
                 let n = GetMenuItemCount(Some(menu));
-                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("Position on the taskbar"));
+                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("任务栏上的位置"));
                 icons.set(menu, n as u32, true, ui::glyph::SETTINGS);
             }
             if let Ok(sub) = CreatePopupMenu() {
                 let mut checked = ID_HEIGHT_CUSTOM;
                 for (i, px) in HEIGHT_OFFSETS.iter().enumerate() {
                     let label = match *px {
-                        0 => "Centred".to_string(),
-                        p if p < 0 => format!("{} px up", -p),
-                        p => format!("{p} px down"),
+                        0 => "居中".to_string(),
+                        p if p < 0 => format!("上移 {} 像素", -p),
+                        p => format!("下移 {p} 像素"),
                     };
                     let _ = AppendMenuW(sub, MF_STRING, ID_HEIGHT_FIRST + i, &windows::core::HSTRING::from(label));
                     if *px == offset_y {
@@ -2460,12 +2460,12 @@ unsafe fn show_menu() {
                     }
                 }
                 if checked == ID_HEIGHT_CUSTOM {
-                    let label = format!("Custom ({offset_y} px, TaskbarOffsetY in the registry)");
+                    let label = format!("自定义（{offset_y} 像素，注册表 TaskbarOffsetY）");
                     let _ = AppendMenuW(sub, MF_STRING | MF_GRAYED, ID_HEIGHT_CUSTOM, &windows::core::HSTRING::from(label));
                 }
                 let _ = CheckMenuRadioItem(sub, ID_HEIGHT_FIRST as u32, ID_HEIGHT_CUSTOM as u32, checked as u32, MF_BYCOMMAND.0);
                 let n = GetMenuItemCount(Some(menu));
-                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("Height on the taskbar"));
+                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("任务栏上的高度"));
                 icons.set(menu, n as u32, true, ui::glyph::SETTINGS);
             }
             // With more than one monitor: all of them, the main one only, or one other monitor only.
@@ -2474,8 +2474,8 @@ unsafe fn show_menu() {
             if !others.is_empty()
                 && let Ok(sub) = CreatePopupMenu()
             {
-                let _ = AppendMenuW(sub, MF_STRING, ID_MONITOR_ALL, w!("All monitors"));
-                let _ = AppendMenuW(sub, MF_STRING, ID_MONITOR_MAIN, w!("Main monitor only"));
+                let _ = AppendMenuW(sub, MF_STRING, ID_MONITOR_ALL, w!("所有显示器"));
+                let _ = AppendMenuW(sub, MF_STRING, ID_MONITOR_MAIN, w!("仅主显示器"));
                 let ids: Vec<String> = others.iter().map(|o| o.0.clone()).collect();
                 let checked = match choice.as_str() {
                     "all" => ID_MONITOR_ALL,
@@ -2483,35 +2483,35 @@ unsafe fn show_menu() {
                     id => find_monitor(&ids, id).map(|i| ID_MONITOR_FIRST + i).unwrap_or(ID_MONITOR_GONE),
                 };
                 for (i, (_, label)) in others.iter().enumerate() {
-                    let _ = AppendMenuW(sub, MF_STRING, ID_MONITOR_FIRST + i, &windows::core::HSTRING::from(format!("{label} only")));
+                    let _ = AppendMenuW(sub, MF_STRING, ID_MONITOR_FIRST + i, &windows::core::HSTRING::from(format!("仅 {label}")));
                 }
                 if checked == ID_MONITOR_GONE {
-                    let _ = AppendMenuW(sub, MF_STRING | MF_GRAYED, ID_MONITOR_GONE, w!("Chosen monitor (not connected, shown on main)"));
+                    let _ = AppendMenuW(sub, MF_STRING | MF_GRAYED, ID_MONITOR_GONE, w!("所选显示器（未连接，显示在主显示器上）"));
                 }
                 let _ = CheckMenuRadioItem(sub, ID_MONITOR_ALL as u32, ID_MONITOR_GONE as u32, checked as u32, MF_BYCOMMAND.0);
                 let n = GetMenuItemCount(Some(menu));
-                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("Show widget on"));
+                let _ = AppendMenuW(menu, MF_STRING | MF_POPUP, sub.0 as usize, w!("小部件显示在"));
                 icons.set(menu, n as u32, true, ui::glyph::MONITOR);
             }
             let _ = AppendMenuW(menu, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
-            let _ = AppendMenuW(menu, MF_STRING | check(ui::autostart_enabled(autostart_name())), ID_AUTOSTART, w!("Automatically start with Windows"));
-            let _ = AppendMenuW(menu, MF_STRING | check(auto_update()), ID_AUTO_UPDATE, w!("Automatically check for updates"));
+            let _ = AppendMenuW(menu, MF_STRING | check(ui::autostart_enabled(autostart_name())), ID_AUTOSTART, w!("随 Windows 自动启动"));
+            let _ = AppendMenuW(menu, MF_STRING | check(auto_update()), ID_AUTO_UPDATE, w!("自动检查更新"));
             let _ = AppendMenuW(
                 menu,
                 MF_STRING | check(silent_install()) | if auto_update() { MF_ENABLED } else { MF_GRAYED },
                 ID_SILENT_UPDATE,
-                w!("Install updates silently"),
+                w!("静默安装更新"),
             );
             let _ = AppendMenuW(menu, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
-            let _ = AppendMenuW(menu, MF_STRING, ID_REQUEST, w!("Request support for a device..."));
+            let _ = AppendMenuW(menu, MF_STRING, ID_REQUEST, w!("请求支持某个设备..."));
             icons.set(menu, ID_REQUEST as u32, false, ui::glyph::MAIL);
             let busy = UPDATE_BUSY.load(std::sync::atomic::Ordering::Relaxed);
-            let label = if busy { "Checking for updates..." } else { "Check for updates..." };
+            let label = if busy { "正在检查更新..." } else { "检查更新..." };
             let _ = AppendMenuW(menu, MF_STRING | if busy { MF_GRAYED } else { MF_ENABLED }, ID_CHECK_UPDATES, &windows::core::HSTRING::from(label));
             icons.set(menu, ID_CHECK_UPDATES as u32, false, ui::glyph::DOWNLOAD);
-            let _ = AppendMenuW(menu, MF_STRING, ID_VERSIONS, w!("Install another version..."));
+            let _ = AppendMenuW(menu, MF_STRING, ID_VERSIONS, w!("安装其他版本..."));
             icons.set(menu, ID_VERSIONS as u32, false, ui::glyph::HISTORY);
-            let _ = AppendMenuW(menu, MF_STRING, ID_EXIT, w!("Exit"));
+            let _ = AppendMenuW(menu, MF_STRING, ID_EXIT, w!("退出"));
             icons.set(menu, ID_EXIT as u32, false, ui::glyph::EXIT);
             let mut pt = POINT::default();
             let _ = GetCursorPos(&mut pt);
@@ -2549,9 +2549,9 @@ unsafe fn show_menu() {
                     if on {
                         message(
                             main,
-                            "BatteryHub now shows one notification-area icon per device, with its level drawn in the icon.
+                            "BatteryHub 现在为每个设备显示一个通知区域图标，电量直接画在图标里。
 
-Windows places these icons like any other: drag them to reorder, or move them in or out of the hidden-icons area. If you don't see them, open Settings > Personalization > Taskbar > Other system tray icons and turn BatteryHub on.",
+Windows 会像排列其他图标一样排列这些图标：可以拖动改变顺序，也可以拖进或拖出隐藏图标区。如果看不到它们，请打开“设置 > 个性化 > 任务栏 > 其他系统托盘图标”，把 BatteryHub 打开。",
                             MB_OK | MB_ICONINFORMATION,
                         );
                     }
@@ -2616,7 +2616,7 @@ Windows places these icons like any other: drag them to reorder, or move them in
                     if on {
                         message(
                             main,
-                            "Automatic update check is on.\n\nBatteryHub looks for a new version only when it starts (at sign-in or when you start it), not while it runs. When there is one, it asks you whether to update (or, with \"Install updates silently\", installs it in the background).",
+                            "自动检查更新已开启。\n\nBatteryHub 只在启动时（登录时或你手动启动时）查找新版本，运行期间不查找。发现新版本时会询问你是否更新（若开启了“静默安装更新”，则在后台直接安装）。",
                             MB_OK | MB_ICONINFORMATION,
                         );
                     }
@@ -2627,7 +2627,7 @@ Windows places these icons like any other: drag them to reorder, or move them in
                     if on {
                         message(
                             main,
-                            "Silent updates are on.\n\nWhen BatteryHub starts and finds a new version, it downloads it from GitHub, checks its SHA-256 checksum and installs it in the background, without asking and without showing anything. Your settings and autostart are kept.",
+                            "静默更新已开启。\n\nBatteryHub 启动时若发现新版本，会从 GitHub 下载、校验其 SHA-256 校验和并在后台安装，不询问、不显示任何界面。你的设置和开机启动项都会保留。",
                             MB_OK | MB_ICONINFORMATION,
                         );
                     }
@@ -3013,7 +3013,7 @@ extern "system" fn main_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LR
                         let _ = KillTimer(Some(hwnd), TIMER_UPDATED);
                         if let Some(old) = a.updated_from.take() {
                             let text = format!(
-                                "Update finished.\n\nBatteryHub was updated:  {}  ->  {}\n\nYour settings and autostart were kept.",
+                                "更新完成。\n\nBatteryHub 已更新：  {}  ->  {}\n\n你的设置和开机启动项已保留。",
                                 batteryhub::install::label_of(&old),
                                 batteryhub::install::version_label()
                             );

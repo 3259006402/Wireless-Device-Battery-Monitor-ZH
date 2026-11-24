@@ -128,7 +128,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: if vid == VID { format!("mchose:{}", hex4(pid)) } else { format!("mchose:{}:{}", hex4(vid), hex4(pid)) },
             name: if name.is_empty() { "MCHOSE mouse".into() } else { name.to_string() },
             kind: DeviceKind::Mouse,
-            via: if cable { "USB cable" } else { "2.4 GHz receiver" }.into(),
+            via: if cable { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
             percent: level,
             charging,
             hw: Some((vid, pid)),

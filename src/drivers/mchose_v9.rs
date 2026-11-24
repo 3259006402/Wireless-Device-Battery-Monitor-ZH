@@ -61,7 +61,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: format!("mchosev9:{}", crate::util::hex4(PID)),
         name: if product.is_empty() { "MCHOSE V9 Pro".into() } else { product.to_string() },
         kind: DeviceKind::Headset,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, PID)),
         ..Default::default()
     };

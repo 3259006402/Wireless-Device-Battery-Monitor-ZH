@@ -1,323 +1,331 @@
-<p align="center"><img src="res/batteryhub.png" width="112" alt="BatteryHub icon"></p>
+<p align="center"><img src="res/batteryhub.png" width="112" alt="BatteryHub 图标"></p>
 
 <h1 align="center">BatteryHub v1.6</h1>
 
 <p align="center">
-<b>An ultra-lightweight Rust implementation of BatteryHub for Windows.</b><br>
-Battery levels of your wireless mouse, headset, keyboard and controller, right on the taskbar,<br>
-in about <b>0.2 MB of RAM</b>.
+<b>BatteryHub 在 Windows 上的超轻量 Rust 实现。</b><br>
+鼠标、耳机、键盘和手柄的电量，直接显示在任务栏上，<br>
+内存占用仅约 <b>0.2 MB</b>。
 </p>
 
 <p align="center">
-<a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/ferloom/Wireless-Device-Battery-Monitor?label=download&logo=windows" alt="Latest release"></a>
+<a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/ferloom/Wireless-Device-Battery-Monitor?label=download&logo=windows" alt="最新发布"></a>
 <a href="../../actions/workflows/ci.yml"><img src="../../actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-<img src="https://img.shields.io/badge/written%20in-Rust-dea584?logo=rust" alt="Written in Rust">
+<img src="https://img.shields.io/badge/written%20in-Rust-dea584?logo=rust" alt="使用 Rust 编写">
 <img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="GPL-3.0">
 </p>
 
 <p align="center">
-<img src="res/screenshot-card.png" width="300" alt="Hover card: Logitech PRO 2 LIGHTSPEED, 80%, level bar, Logitech receiver, chart of the last 24 hours"><br>
-<img src="res/screenshot-taskbar.png" width="390" alt="BatteryHub on the Windows 11 taskbar next to the notification area: headset 88%, mouse 80%">
+<img src="res/screenshot-card.png" width="300" alt="悬停卡片：Logitech PRO 2 LIGHTSPEED，80%，电量条，Logitech 接收器，最近 24 小时曲线"><br>
+<img src="res/screenshot-taskbar.png" width="390" alt="BatteryHub 显示在 Windows 11 任务栏通知区域旁：耳机 88%，鼠标 80%">
 </p>
 
 > [!IMPORTANT]
-> **This is a recode of krisgfx9/Wireless-Device-Battery-Monitor** (the C++ BatteryHub by krisgfx9), not a fork and not the original.
-> It rewrites the original in Rust. The idea, the look of the taskbar strip and the device protocols all come from the original project, and the credit for them goes to its authors.
+> **本项目是 [krisgfx9/Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor)（krisgfx9 的 C++ 版 BatteryHub）的重写版**，既不是 fork，也不是原版。
+> 它用 Rust 重写了原版。想法、任务栏电量条的外观以及各设备协议都来自原项目，相关功劳属于原项目作者。
 >
-> **The original is currently unavailable on GitHub.** On 22 November 2026 the krisgfx9 account was suspended by GitHub, which took the original repository offline with it. According to the original author, no reason was given; they have appealed, so the original may come back. Until then, the original author shares downloads through the project's Discord.
+> **原项目目前在 GitHub 上无法访问。** 2026 年 11 月 22 日，krisgfx9 账号被 GitHub 封禁，原仓库也随之下线。据原作者说并未给出理由；他已经提起申诉，因此原项目可能会回来。在此之前，原作者通过项目的 Discord 分享下载。
 >
-> This recode is still **not the original**, but it **is supported and will stay supported**: it keeps being developed and updated, with new devices added from [device requests](../../issues).
+> 这个重写版**仍然不是原版**，但**它仍在维护，也会继续维护**：持续开发和更新，并根据[设备请求](../../issues)不断加入新设备。
 
-Developed by [@ferloom](https://github.com/ferloom) with the help of Claude (AI).
+本项目的作者是 [@ferloom](https://github.com/ferloom)，在 Claude（AI）的协助下完成。
+
+> **本仓库（中文版）来源与致谢**
+>
+> - 本仓库 fork 自 **[@ferloom](https://github.com/ferloom) 的 [Wireless-Device-Battery-Monitor](https://github.com/ferloom/Wireless-Device-Battery-Monitor)**（BatteryHub v1.6 的 Rust 重写版），在其基础上把界面文字与文档翻译成简体中文。
+> - 再往前，原始项目是 **[@krisgfx9](https://github.com/krisgfx9) 的 [Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor)**（C++ 版 BatteryHub）。
+> - **想法、外观设计和全部设备协议都出自 krisgfx9 与 ferloom，在此衷心感谢两位作者的无私分享。** 本仓库只做中文本地化，不改变任何功能；完整致谢见 [CREDITS.md](CREDITS.md)。
+>
+> 本文档是上游英文 README 的中文翻译版。上游项目：<https://github.com/ferloom/Wireless-Device-Battery-Monitor>。代码中的变量名、注册表键名、窗口类名等保持英文，以便与上游同步。
 
 ---
 
-## Contents
+## 目录
 
-[Download](#download) · [Problem with a new version?](#problem-with-a-new-version-downgrade-and-report-it) · [Features](#features) · [Using it](#using-it) · [Setup](#setup-install--update--uninstall) · [Resource usage vs. the original](#resource-usage-vs-the-original) · [Taskbar compatibility](#taskbar-compatibility) · [Supported devices](#supported-devices) · [Unsupported devices](#unsupported-devices) · [Testing](#testing) · [Building](#building-from-source) · [License](#license)
+[下载](#下载) · [新版本出问题？回退并反馈](#新版本出问题回退并反馈) · [功能](#功能) · [使用方法](#使用方法) · [安装、更新与卸载](#安装更新与卸载) · [与原版的资源占用对比](#与原版的资源占用对比) · [任务栏兼容性](#任务栏兼容性) · [支持的设备](#支持的设备) · [暂不支持的设备](#暂不支持的设备) · [测试](#测试) · [从源码构建](#从源码构建) · [许可证](#许可证)
 
-## Download
+## 下载
 
-Get **`BatteryHub-Taskbar-Setup-v1.6.exe`** from the [**latest release**](../../releases/latest), run it and click **Install**.
+从[**最新发布**](../../releases/latest)获取 **`BatteryHub-Taskbar-Setup-v1.6.exe`**，运行后点击 **安装**。
 
-- No administrator rights needed (per-user install).
-- Already installed? Use *Check for updates...* in the right-click menu, or run the new setup and click **Update**.
-- It does not interfere with the original C++ BatteryHub if you have that installed too.
-- Windows may show a SmartScreen warning because the file is not code-signed: *More info* → *Run anyway*.
+- 不需要管理员权限（按用户安装）。
+- 已经装过？用右键菜单里的*检查更新...*，或者运行新的安装程序并点击 **更新**。
+- 即使你还装着原版 C++ BatteryHub，它也不会与之冲突。
+- 由于文件没有代码签名，Windows 可能显示 SmartScreen 警告：*更多信息* → *仍要运行*。
 
-## Problem with a new version? Downgrade and report it
+## 新版本出问题？回退并反馈
 
-If something breaks after an update, you can always go back to an older version:
+如果更新之后出了什么问题，你随时可以回到旧版本：
 
-- **From v1.6 on:** right-click BatteryHub → *Install another version...* (or *Other versions...* in the setup window) lists every release from GitHub; pick one and click **Go back to ...**. It is downloaded and checked against its SHA-256 checksum like an update.
-- **By hand:** open [**Releases**](../../releases), download the setup of an earlier version (e.g. `BatteryHub-Taskbar-Setup-v1.5.exe`) and run it. It finds the newer version you have installed and offers to reinstall with its own (older) version.
+- **从 v1.6 起：** 右键点击 BatteryHub → *安装其他版本...*（或安装程序窗口里的*其他版本...*）会列出 GitHub 上的所有发布版本；挑一个并点击 **回退到 ...**。它的下载和校验（SHA-256 校验和）与更新时相同。
+- **手动：** 打开[**发布页**](../../releases)，下载较早版本的安装程序（例如 `BatteryHub-Taskbar-Setup-v1.5.exe`）并运行。它会发现你安装的较新版本，并提议用它自带的（较旧）版本重新安装。
 
-Your warning levels, device names, options and battery history are kept either way.
+无论哪种方式，你的警告阈值、设备名称、各项选项和电量历史都会保留。
 
-*Check for updates* never offers an older version, so the downgrade stays in place until you update again. Versions before v1.1 do not have *Check for updates*; to come back later, run the newer setup.
+*检查更新*永远不会提供更旧的版本，因此回退会一直生效，直到你再次更新。v1.1 之前的版本没有*检查更新*；想回到新版本，运行新的安装程序即可。
 
-**Please also report the problem** in [**Issues**](../../issues/new) so it can be fixed in the next version. It helps to include:
+**同时也请把问题反馈出来**，见[**Issues**](../../issues/new)，这样下个版本就能修掉。最好附上：
 
-- the version that has the problem and the one that works (both are shown at the top of the setup window);
-- Windows version and taskbar (Windows 11, Windows 10, ExplorerPatcher: normal or small taskbar);
-- your devices (e.g. "Logitech PRO 2 LIGHTSPEED on its receiver", "AirPods over Bluetooth");
-- what happened and what you expected, ideally with a screenshot of the taskbar.
+- 出问题的版本和能用的版本（两者都显示在安装程序窗口顶部）；
+- Windows 版本和任务栏样式（Windows 11、Windows 10、ExplorerPatcher：普通或小任务栏）；
+- 你的设备（例如“接收器上的 Logitech PRO 2 LIGHTSPEED”、“蓝牙连接的 AirPods”）；
+- 发生了什么、你期望什么，最好附一张任务栏截图。
 
-## Features
+## 功能
 
-- **On the taskbar, next to the clock:** one icon and percentage per device (`🎧 27%  🖱 96%`), in the original's look (Segoe Fluent Icons, Segoe UI Variable, ClearType), following light / dark mode and DPI.
-- **Hover a device** for a card with its name, level, connection and a chart of the **last 24 hours** (charging in blue), fading in and cross-fading between devices like the taskbar's window previews; the widget lights up like the taskbar's own buttons.
-- **Device dashboard** (right-click a device → *Dashboard...*): level and state, a 24 h / 3-day / 7-day chart with charging marked, the charge and discharge sessions, and statistics (typical battery life, time left, charge and discharge rates per hour). Where there is too little data it says so instead of guessing.
-- **7-day battery history:** one point per change (at least every 10 minutes), kept 7 days, in `%LOCALAPPDATA%\BatteryHub\Taskbar\History.bin`. Times when BatteryHub was not running stay empty: nothing is filled in.
-- **Rename a device** (shown everywhere in BatteryHub only; the device itself is not changed) and **Warn at 5%**: one notification when a device on battery drops to 5% or less, again only after it was charged.
-- **Charging at a glance:** green ⚡ while charging, blue ⚡ at 100%, red percentage at or below the device's warning level.
-- **Per-device warning level:** 50 / 40 / 30 / 20 / 15 / 10 / 5%.
-- **Reacts at once** when a receiver, cable or Bluetooth device connects or disconnects, and within ~10 s when a headset on a 2.4 GHz dongle is switched on or off.
-- **Refresh interval** of 1 / 5 / 10 / 30 minutes or 1 hour.
-- **More monitors:** show the widget on all monitors, the main one only, or only one other monitor; on every taskbar it sits right next to that taskbar's clock and appears at the same moment.
-- **Notification-area icons instead** (optional): one icon per device that Windows itself places, so it can be dragged between other tray icons and never overlaps other taskbar widgets.
-- **Next to other taskbar widgets:** when another program places its own widget in the taskbar (network or CPU meters...), BatteryHub sits left of it instead of on top of it.
-- **Position and background:** move the widget further from the clock, and an optional plate behind it for transparent taskbars.
-- **Start with Windows** and **automatic update check** switched on or off right from the menu.
-- **Check for updates** from the menu, with a SHA-256-verified download.
-- **Request support for a device** from the menu: pick a device that is not shown, and a GitHub issue opens filled in with what is needed to add it.
-- **Tiny:** about 0.1–0.2 MB of RAM when idle (Task Manager "Memory"), about 0.1 s of CPU per minute.
-- **One copy only:** starting BatteryHub again while it runs does nothing.
-- **Left or right taskbar** (Windows 11): the widget becomes a column above the notification area, and the hover card opens beside the taskbar.
-- **Safe fallback** to notification-area icons on an unknown Explorer layout.
+- **在任务栏上、紧挨时钟：** 每个设备一个图标加百分比（`🎧 27%  🖱 96%`），沿用原版的外观（Segoe Fluent Icons、Segoe UI Variable、ClearType），跟随浅色 / 深色模式和 DPI。
+- **悬停某个设备**会弹出一张卡片，显示名称、电量、连接方式，以及**最近 24 小时**的曲线（充电时段为蓝色），淡入与设备间交叉淡出，效果类似任务栏的窗口预览；小部件也会像任务栏自身的按钮一样高亮。
+- **设备仪表盘**（右键点击设备 → *仪表盘...*）：电量与状态、24 小时 / 3 天 / 7 天曲线（标出充电时段）、充电与放电会话，以及统计信息（典型续航、剩余时间、每小时充放电速率）。数据太少时会明确说明，而不是瞎猜。
+- **7 天电量历史：** 每次变化记录一个点（至少每 10 分钟一次），保留 7 天，存放在 `%LOCALAPPDATA%\BatteryHub\Taskbar\History.bin`。BatteryHub 没运行的时间段保持空白：不会补任何数据。
+- **重命名设备**（只在 BatteryHub 各处显示，设备本身不会被改动）以及 **5% 时提醒**：设备在使用电池时掉到 5% 或更低会发一次通知，充电之后才会再次提醒。
+- **一眼看出充电状态：** 充电时绿色 ⚡，100% 时蓝色 ⚡，电量达到或低于设备警告阈值时百分比变红。
+- **每个设备的警告阈值：** 50 / 40 / 30 / 20 / 15 / 10 / 5%。
+- **立即响应**：接收器、线缆或蓝牙设备连接 / 断开时即时更新；2.4 GHz 接收器上的耳机开机 / 关机约 10 秒内更新。
+- **刷新间隔**可选 1 / 5 / 10 / 30 分钟或 1 小时。
+- **多显示器：** 可显示在所有显示器、仅主显示器，或仅某一台其他显示器；在每个任务栏上都紧挨该任务栏的时钟，并同时出现。
+- **改为通知区域图标**（可选）：每个设备一个由 Windows 自己放置的图标，可以在其他托盘图标之间拖动，也不会与其他任务栏小部件重叠。
+- **与其他任务栏小部件共存：** 当其他程序在任务栏上放置自己的小部件（网速或 CPU 监控等）时，BatteryHub 排到它的左侧而不是压在上面。
+- **位置与背景：** 可以把小部件调得更远离时钟，也可以为透明任务栏加一块底板。
+- **随 Windows 启动**和**自动检查更新**都能直接在菜单里开关。
+- **检查更新**（菜单内），下载经过 SHA-256 校验。
+- **请求支持某个设备**（菜单内）：选择一个没显示的设备，会打开一个已填好所需信息的 GitHub issue。
+- **体积极小：** 空闲时内存约 0.1–0.2 MB（任务管理器的“内存”列），每分钟约 0.1 秒 CPU。
+- **只允许运行一份：** BatteryHub 已在运行时再次启动不会有任何动作。
+- **左侧或右侧任务栏**（Windows 11）：小部件变成通知区域上方的一列，悬停卡片在任务栏旁边弹出。
+- **安全回退：** 遇到未知的资源管理器布局时回退到通知区域图标。
 
-## Using it
+## 使用方法
 
-| On the strip | Meaning |
+| 电量条上的样子 | 含义 |
 |---|---|
-| **Red** percentage | At or below the device's warning level (default 15%) |
-| **Green ⚡** | Plugged in and charging |
-| **Blue ⚡** | Plugged in and charged to 100% |
-| Dimmed | Asleep (receiver still plugged in), showing the last known value |
+| **红色**百分比 | 达到或低于该设备的警告阈值（默认 15%） |
+| **绿色 ⚡** | 已接电，正在充电 |
+| **蓝色 ⚡** | 已接电，已充到 100% |
+| 变暗 | 休眠（接收器仍插着），显示最后已知电量 |
 
-Left click does nothing (on purpose: the strip stays out of the way). **Right click** opens the menu:
+左键点击不做任何事（这是有意的：电量条尽量不碍事）。**右键**打开菜单：
 
-| Menu item | What it does |
+| 菜单项 | 作用 |
 |---|---|
-| *Device name (level, state)* ▸ | *Dashboard...*, *Battery history*, *Statistics* (the dashboard on that tab), *Rename device...*, *Red warning at or below* 50 / 40 / 30 / 20 / **15** / 10 / 5%, and *Warn at 5% (notification)* (**on** by default) |
-| *Refresh devices* | Full rescan; devices that are gone disappear |
-| *Refresh battery levels* | Reads the levels again |
-| *Refresh battery every* ▸ | **1 minute** / 5 / 10 / 30 minutes / 1 hour |
-| *Refresh when a device connects or disconnects* | **On** by default; see below |
-| *Show as notification-area icons (Windows arranges them)* | **Off** by default. Instead of the strip, one notification-area icon per device with its level drawn in it. Windows places these icons like any other: drag them to reorder or in and out of the hidden icons. New icons start hidden behind ^ (Windows 11 does that for every app): drag them onto the taskbar or turn them on in *Settings → Personalization → Taskbar → Other system tray icons* once; Windows remembers it per device |
-| *Background behind taskbar text (for translucent taskbars)* | **Off** by default. A rounded plate in the taskbar's colour behind the widget, so it stays readable on a transparent taskbar (TranslucentTB, Windhawk Taskbar Styler...) |
-| *Position on the taskbar* ▸ | **Next to the notification area** or 20 to 200 px to the left of it (in 20 px steps), e.g. to make room for another taskbar widget (iCUE, network meters...). Also applies on other monitors. A value set by hand (`TaskbarOffset`) shows as *Custom* |
-| *Height on the taskbar* ▸ | 5 / 10 / 15 px up, **Centred**, or 5 / 10 / 15 px down. Also applies on other monitors. A value set by hand (`TaskbarOffsetY`) shows as *Custom* |
-| *Show widget on* ▸ | Only with more than one monitor: *All monitors* / **Main monitor only** / *Display 2 (left) only*... The monitor is remembered by its identity, not its number; while it is unplugged the widget is on the main taskbar. Other monitors need *Show my taskbar on all displays* in Windows (taskbars of other programs, e.g. DisplayFusion, are not supported) |
-| *Automatically start with Windows* | Adds or removes BatteryHub's autostart entry (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run\BatteryHub Taskbar`) |
-| *Automatically check for updates* | **Off** by default. When on, BatteryHub checks GitHub once, about 2 s after it starts (not while it runs; if the network is not up yet it tries again every 15 s, up to 8 times); if there is a new version you get the same question as with *Check for updates...* |
-| *Install updates silently* | **Off** by default; needs the automatic check. When the check finds a new version, BatteryHub downloads it, verifies its SHA-256 checksum and installs it in the background: no question, no setup window, no "Update finished" message. Settings and autostart are kept. |
-| *Request support for a device...* | Lists every device BatteryHub can see (HID, USB and Bluetooth; vendor-specific and audio devices first). Pick yours, check the name and type, add notes, and *Send* opens a new GitHub issue in your browser, filled in with exactly what the window shows: name, type, your name (optional, the issue is public), notes, vendor / product id, HID and USB interface summary, Windows build. You submit it there (a GitHub account is needed); nothing is sent from the app. *Copy full report* copies the same plus the list of all devices. Also available as `batteryhub-taskbar.exe --report` |
-| *Install another version...* | Opens the setup's list of all releases on GitHub, to go back to an older one (or install a newer one) |
-| *Check for updates...* | "No new updates", or "A new update is available: v1.1 → v1.x - update now?". *Yes* downloads the setup, checks it against the release's SHA-256 checksum and starts it; it updates and restarts BatteryHub, keeping your settings and autostart |
-| *Exit* | Closes BatteryHub |
+| *设备名（电量、状态）* ▸ | *仪表盘...*、*电量历史*、*统计*（仪表盘对应标签页）、*重命名设备...*、*低于等于* 50 / 40 / 30 / 20 / **15** / 10 / 5% 时红色警告，以及 *5% 时提醒（通知）*（默认**开**） |
+| *刷新设备* | 完整重新扫描；已消失的设备会移除 |
+| *刷新电量* | 重新读取电量 |
+| *电量刷新间隔* ▸ | **1 分钟** / 5 / 10 / 30 分钟 / 1 小时 |
+| *设备连接或断开时刷新* | 默认**开**；见下文 |
+| *显示为通知区域图标（由 Windows 排列）* | 默认**关**。不显示电量条，而是每个设备一个通知区域图标，里面画着电量。Windows 会像排列其他图标一样排列它们：可以拖动改变顺序，也可以拖进或拖出隐藏图标区。新图标一开始藏在 ^ 后面（Windows 11 对每个应用都这样）：把它拖到任务栏上，或者在*设置 → 个性化 → 任务栏 → 其他系统托盘图标*里打开一次；Windows 会按设备记住这个选择 |
+| *任务栏文字底层背景（用于半透明任务栏）* | 默认**关**。在小部件后面加一块任务栏颜色的圆角底板，让它在透明任务栏（TranslucentTB、Windhawk Taskbar Styler 等）上依然清晰可读 |
+| *任务栏上的位置* ▸ | **紧邻通知区域**，或距其 20 到 200 像素（每 20 像素一档），例如为另一个任务栏小部件（iCUE、网速监控等）让出空间。在其他显示器上同样生效。手动设置的值（`TaskbarOffset`）显示为*自定义* |
+| *任务栏上的高度* ▸ | 上移 5 / 10 / 15 像素、**居中**，或下移 5 / 10 / 15 像素。在其他显示器上同样生效。手动设置的值（`TaskbarOffsetY`）显示为*自定义* |
+| *小部件显示在* ▸ | 仅在多显示器时出现：*所有显示器* / **仅主显示器** / *仅显示器 2（左侧）*... 显示器按其身份记忆，而不是编号；它未连接时小部件显示在主任务栏上。其他显示器需要 Windows 里的*在所有显示器上都显示我的任务栏*（其他程序的任务栏，例如 DisplayFusion，不受支持） |
+| *随 Windows 自动启动* | 添加或删除 BatteryHub 的启动项（`HKCU\Software\Microsoft\Windows\CurrentVersion\Run\BatteryHub Taskbar`） |
+| *自动检查更新* | 默认**关**。开启后，BatteryHub 在启动约 2 秒后检查一次 GitHub（运行期间不检查；如果网络还没就绪，会每 15 秒重试一次，最多 8 次）；若有新版本，会弹出与*检查更新...*相同的问题 |
+| *静默安装更新* | 默认**关**；需要开启自动检查。当检查发现新版本时，BatteryHub 会下载、校验其 SHA-256 校验和并在后台安装：不询问、不显示安装程序窗口、不弹“更新完成”提示。设置和开机启动项都会保留。 |
+| *请求支持某个设备...* | 列出 BatteryHub 能看到的所有设备（HID、USB 和蓝牙；厂商专用接口和音频设备排在最前）。选择你的设备，核对名称和类型，加上备注，然后*发送*会在浏览器中打开一个新的 GitHub issue，内容与窗口显示的完全一致：名称、类型、你的名字（可选，issue 是公开的）、备注、厂商 / 产品 ID、HID 与 USB 接口摘要、Windows 版本号。由你在那里提交（需要 GitHub 账号）；程序本身不会发送任何内容。*复制完整报告*会复制同样的内容，外加所有设备的列表。也可以使用 `batteryhub-taskbar.exe --report` |
+| *安装其他版本...* | 打开安装程序里的 GitHub 发布列表，可回退到更旧的版本（或安装更新的版本） |
+| *检查更新...* | “没有新更新”，或“有新更新可用：v1.1 → v1.x - 现在更新吗？”。选择*是*会下载安装程序、用该发布的 SHA-256 校验和核对后启动；它会更新并重启 BatteryHub，保留你的设置和开机启动项 |
+| *退出* | 关闭 BatteryHub |
 
-The hover card and the menu follow the taskbar theme (dark or light); the *Request support* window follows the Windows app theme.
+悬停卡片和菜单跟随任务栏主题（深色或浅色）；*请求支持*窗口跟随 Windows 应用主题。
 
-**When a device comes or goes** (with *Refresh when a device connects or disconnects* on):
+**设备来去时**（在*设备连接或断开时刷新*开启的前提下）：
 
-| Event | Shown after |
+| 事件 | 显示延迟 |
 |---|---|
-| USB receiver / cable plugged in or removed | ~1–3 s (Windows device notifications; every read also checks whether the set of HID devices changed) |
-| Bluetooth device (AirPods, headphones, controllers) connects or disconnects | a few seconds (connections are checked every 3 s); AirPods only while connected to this PC |
-| Headset on a 2.4 GHz dongle switched on or off | ~10 s (headset dongles are checked every 10 s) |
-| Mouse / keyboard asleep, receiver still plugged in | stays, dimmed, with its last level |
-| PC wakes up | a few seconds |
+| USB 接收器 / 线缆插入或拔出 | 约 1–3 秒（Windows 设备通知；每次读取也会检查 HID 设备集合是否变化） |
+| 蓝牙设备（AirPods、耳机、手柄）连接或断开 | 几秒（每 3 秒检查一次连接）；AirPods 只在连接本机时显示 |
+| 2.4 GHz 接收器上的耳机开机或关机 | 约 10 秒（耳机接收器每 10 秒检查一次） |
+| 鼠标 / 键盘休眠，接收器仍插着 | 保持显示，变暗，并显示最后电量 |
+| 电脑唤醒 | 几秒 |
 
-## Setup: Install / Update / Uninstall
+## 安装、更新与卸载
 
-Since v1.6 the setup is a Windows 11 style window. It first checks what is on this PC (the installed version and where, whether it is running, the original C++ BatteryHub, which it never touches) and offers the one action that fits:
+自 v1.6 起，安装程序是一个 Windows 11 风格的窗口。它先检查这台电脑上的情况（已安装的版本及其位置、是否正在运行、原版 C++ BatteryHub——后者它从不触碰），然后给出唯一合适的操作：
 
-| Button | When | What it does |
+| 按钮 | 何时出现 | 作用 |
 |---|---|---|
-| **Install** | not installed | Installs, with a Start menu shortcut, and the choices *Desktop shortcut*, *Start automatically when I sign in to Windows* and *Start BatteryHub when setup is done* |
-| **Update to ...** | an older version is installed | Replaces the program and keeps your settings, history and autostart; restarts it if it was running |
-| **Reinstall** | the same version is installed | Writes the program again (repairs a damaged install) |
-| **Go back to ...** | a newer version is installed | Installs this setup's older version, keeping your settings |
-| **Other versions...** | always | Lists every release on GitHub; the chosen one is downloaded, checked against its SHA-256 checksum and installed |
-| **Uninstall...** | installed | Closes BatteryHub, removes it from every autostart location, the shortcuts, files and the Settings → Apps entry. Your settings and battery history **stay** unless you tick *Also remove my settings and battery history* |
+| **安装** | 尚未安装 | 安装，并创建开始菜单快捷方式，另有*桌面快捷方式*、*登录 Windows 时自动启动*和*安装完成后启动 BatteryHub* 三个选项 |
+| **更新到 ...** | 已安装较旧版本 | 替换程序并保留你的设置、历史和开机启动项；若它正在运行则重启它 |
+| **重新安装** | 已安装相同版本 | 重新写入程序（修复损坏的安装） |
+| **回退到 ...** | 已安装较新版本 | 安装本安装程序自带的较旧版本，保留你的设置 |
+| **其他版本...** | 总是可见 | 列出 GitHub 上的所有发布版本；选中的版本会被下载、用 SHA-256 校验和核对后安装 |
+| **卸载...** | 已安装 | 关闭 BatteryHub，从所有开机启动位置、快捷方式、文件和“设置 → 应用”条目中移除它。除非你勾选*同时删除我的设置和电量历史*，否则你的设置和电量历史**会保留** |
 
-The new program file is written next to the old one, read back and checked (SHA-256) before it replaces it, so a failed write never leaves a broken install. Only BatteryHub processes started from the install folder are closed. *Show details* shows the log, also saved to `%TEMP%\BatteryHub-Setup.log`.
+新程序文件先写在旧文件旁边、读回并校验（SHA-256），确认无误后才替换，因此写入失败也不会留下损坏的安装。只会关闭从安装目录启动的 BatteryHub 进程。*显示详情*会显示日志，日志同时保存到 `%TEMP%\BatteryHub-Setup.log`。
 
-BatteryHub also appears in **Settings → Apps → Installed apps** (name, version, publisher, size), where *Uninstall* opens the same window.
+BatteryHub 也会出现在**设置 → 应用 → 已安装的应用**中（名称、版本、发布者、大小），那里的*卸载*会打开同一个窗口。
 
-Command line for scripts: `/install`, `/update`, `/uninstall`, `/S` (silent), `/autostart=yes|no`, `/desktop=yes|no`, `/nolaunch`, `/nonotify` (no "Update finished" message afterwards), `/purge` (uninstall: also remove settings and history), `/versions` (open the version list).
+给脚本用的命令行：`/install`、`/update`、`/uninstall`、`/S`（静默）、`/autostart=yes|no`、`/desktop=yes|no`、`/nolaunch`、`/nonotify`（结束后不弹“更新完成”）、`/purge`（卸载时同时删除设置和历史）、`/versions`（打开版本列表）。
 
-| Where the files go | |
+| 文件放在哪里 | |
 |---|---|
-| Program | `%LOCALAPPDATA%\Programs\BatteryHub\Taskbar\batteryhub-taskbar.exe`, plus `BatteryHub-Setup.exe` (a copy of the setup that *Uninstall* in Settings runs) |
-| Settings → Apps entry | `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\BatteryHub Taskbar` |
-| Shortcuts | Desktop and `Start Menu\Programs\BatteryHub\BatteryHub Taskbar.lnk` |
-| Settings | `HKCU\Software\BatteryHub\Taskbar`: `Thresholds` (per device), `RefreshMinutes`, `RefreshOnDeviceChange`, `TaskbarOffset` (DWORD, gap from the clock in pixels), `TaskbarOffsetY` (DWORD, up / down shift in pixels, + = down), `WidgetMonitor` (`all`, `main` or a monitor id), `WidgetBackground`, `AutoCheckUpdates`, `SilentUpdates`, `NotificationIcons`, `History` (binary, last 24 hours of levels) |
-| Autostart | `HKCU\...\Run` → `BatteryHub Taskbar` (if you chose it) |
+| 程序 | `%LOCALAPPDATA%\Programs\BatteryHub\Taskbar\batteryhub-taskbar.exe`，外加 `BatteryHub-Setup.exe`（“设置”里*卸载*所运行的那份安装程序副本） |
+| “设置 → 应用”条目 | `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\BatteryHub Taskbar` |
+| 快捷方式 | 桌面，以及 `Start Menu\Programs\BatteryHub\BatteryHub Taskbar.lnk` |
+| 设置 | `HKCU\Software\BatteryHub\Taskbar`：`Thresholds`（按设备）、`RefreshMinutes`、`RefreshOnDeviceChange`、`TaskbarOffset`（DWORD，距时钟的像素）、`TaskbarOffsetY`（DWORD，上下偏移像素，+ 为向下）、`WidgetMonitor`（`all`、`main` 或某个显示器 id）、`WidgetBackground`、`AutoCheckUpdates`、`SilentUpdates`、`NotificationIcons`、`History`（二进制，最近 24 小时的电量） |
+| 开机启动 | `HKCU\...\Run` → `BatteryHub Taskbar`（如果你选择了它） |
 
-The original C++ BatteryHub uses different names (`Program Files\BatteryHub`, `HKCU\Software\WirelessBattery`, autostart `WirelessBattery`) and is never touched.
+原版 C++ BatteryHub 使用不同的名称（`Program Files\BatteryHub`、`HKCU\Software\WirelessBattery`、启动项 `WirelessBattery`），本程序从不触碰它们。
 
-## Resource usage vs. the original
+## 与原版的资源占用对比
 
-Both programs running **side by side on the same PC**, the same devices connected (Logitech LIGHTSPEED mouse, SteelSeries 2.4 GHz headset dongle, Bluetooth), default settings (refresh every minute), sampled every 2 s for 3 minutes after start-up. Method, raw samples and older runs: [bench/RESULTS.md](bench/RESULTS.md).
+两个程序在**同一台电脑上并排运行**，连接同样的设备（Logitech LIGHTSPEED 鼠标、SteelSeries 2.4 GHz 耳机接收器、蓝牙），使用默认设置（每分钟刷新），启动后每 2 秒采样一次，持续 3 分钟。方法、原始采样和更早的结果见 [bench/RESULTS.md](bench/RESULTS.md)。
 
-| | **BatteryHub (Rust) v1.1** | BatteryHub (C++) 1.1.0 | |
+| | **BatteryHub（Rust）v1.1** | BatteryHub（C++）1.1.0 | |
 |---|---:|---:|---:|
-| **RAM in Task Manager** ("Memory" column), median | **0.20 MB** | 4.66 MB | **23× less** |
-| RAM in Task Manager, average / max | 0.33 / 0.82 MB | 4.65 / 4.92 MB | |
-| Working set incl. shared system DLLs | **1.3 MB** | 27.5 MB | 21× less |
-| Private bytes (commit) | **4.6 MB** | 6.0 MB | |
-| CPU time per minute | **0.11 s** | 0.88 s | 8× less |
-| Threads | **9** | 15 | |
-| Handles | 367 | 375 | |
-| Program file | **about 500 KB** | 1,958 KB | 4× smaller |
+| **任务管理器“内存”列**中位数 | **0.20 MB** | 4.66 MB | **少 23 倍** |
+| 任务管理器“内存”平均值 / 最大值 | 0.33 / 0.82 MB | 4.65 / 4.92 MB | |
+| 工作集（含共享系统 DLL） | **1.3 MB** | 27.5 MB | 少 21 倍 |
+| 专用字节（提交） | **4.6 MB** | 6.0 MB | |
+| 每分钟 CPU 时间 | **0.11 秒** | 0.88 秒 | 少 8 倍 |
+| 线程数 | **9** | 15 | |
+| 句柄数 | 367 | 375 | |
+| 程序文件大小 | **约 500 KB** | 1,958 KB | 小 4 倍 |
 
-**v1.5**, with about 40 more device drivers, the hover card and its 24-hour history: program 867 KB, setup 1.6 MB. In a 90-second check the Task Manager median was **0.12 MB**, with short peaks up to about 1 MB while the devices are being read.
+**v1.5**（多了约 40 个设备驱动、悬停卡片及其 24 小时历史）：程序 867 KB，安装程序 1.6 MB。一次 90 秒的检查中，任务管理器“内存”中位数为 **0.12 MB**，读取设备时短暂冲到约 1 MB。
 
-What keeps it small: memory needed only for a moment (a read, a Bluetooth check) is handed back to Windows right after; settings are cached; Bluetooth LE is listened to only while reading; the device list is cached and rescanned only when it changes; only Bluetooth device nodes are enumerated; the Xbox input APIs and WinHTTP are loaded only when needed.
+让它保持小巧的做法：只在某一刻需要的内存（一次读取、一次蓝牙检查）用完后立即交还 Windows；设置改为缓存；蓝牙 LE 只在读取时监听；设备列表会被缓存，只有变化时才重新扫描；只枚举蓝牙设备节点；Xbox 输入 API 和 WinHTTP 只在需要时加载。
 
-**To be fair:** the original has more device drivers (about 100), brand colours and more options. Part of the difference is less code doing less work, not only the language.
+**公道地说：** 原版有更多设备驱动（约 100 个）、品牌配色和更多选项。差异有一部分来自“代码更少、做的事更少”，并不只是语言不同。
 
-## Taskbar compatibility
+## 任务栏兼容性
 
-The strip is a small layered window placed inside the taskbar, left of the notification area, the same technique the original uses. It depends on Explorer's window layout, so BatteryHub checks it every second and falls back safely:
+电量条是一个放在任务栏内、通知区域左侧的小型分层窗口，使用的技术与原版相同。它依赖资源管理器的窗口布局，因此 BatteryHub 每秒检查一次并在必要时安全回退：
 
-| Situation | What BatteryHub does |
+| 情况 | BatteryHub 的做法 |
 |---|---|
-| Windows 11, Windows 10, ExplorerPatcher (also the small Windows 10 taskbar) | Strip next to the clock; on the Windows 10 layout the task buttons are narrowed so they never slide under it |
-| Explorer restarts | Recreates exactly one strip on the new taskbar (stray strip windows are removed every second) |
-| Taskbar height, DPI or theme changes (e.g. after leaving full screen) | Re-renders the strip |
-| Vertical taskbar (left or right, Windows 11) | Strip as a column above the notification area; the hover card opens beside the taskbar |
-| Unknown Explorer layout, or the strip cannot be placed for 3 s | **One notification-area icon per device** (level drawn in the icon, a short tooltip and the same menu), back to the strip when possible |
+| Windows 11、Windows 10、ExplorerPatcher（也包括 Windows 10 小任务栏） | 电量条紧挨时钟；在 Windows 10 布局下会收窄任务按钮，使其不会被滑到电量条下面 |
+| 资源管理器重启 | 在新任务栏上重建且只重建一条电量条（每秒清理游离的电量条窗口） |
+| 任务栏高度、DPI 或主题变化（例如退出全屏后） | 重新绘制电量条 |
+| 垂直任务栏（Windows 11 左侧或右侧） | 电量条变成通知区域上方的一列；悬停卡片在任务栏旁边弹出 |
+| 未知的资源管理器布局，或电量条 3 秒仍无法就位 | **每个设备一个通知区域图标**（图标里画着电量、简短提示和同样的菜单），恢复可能后再换回电量条 |
 
-## Supported devices
+## 支持的设备
 
-| Family | Notes |
+| 系列 | 说明 |
 |---|---|
-| Logitech | HID++ 1.0 / 2.0 over Unifying, Bolt, LIGHTSPEED, Bluetooth and USB, plus G headsets (voltage curves) |
-| SteelSeries | Arctis 1 / 7 / 9 / Pro, Arctis Nova (3P, 5, 7, 7+, Pro), GameBuds, Aerox, Prime, Rival |
-| Razer | Mice, keyboards and receivers (90-byte feature report protocol); BlackShark V3 headset over its HyperSpeed dongle `1532:057A` or USB cable `1532:0579` (protocol from OpenRazer PR #2794 and Joule); BlackShark V2 Pro (2023) over its HyperSpeed dongle `1532:0555` (protocol from OpenRazer PR #2862 and [blackshark-battery](https://github.com/matej-basic/blackshark-battery), MIT); Barracuda X Chroma over its 2.4 GHz dongle `1532:0574` (protocol from [batterywatch](https://github.com/itayavra/batterywatch), GPL-3.0); Nari over its 2.4 GHz dongle `1532:051C` (request and answer from [RazerNariBatteryLevel](https://github.com/Modzeleczek/RazerNariBatteryLevel)'s Synapse capture, field layout from [HaloBattery](https://github.com/HeyOkay/HaloBattery), MIT, and [BrimDeck](https://github.com/MoFeng2223/BrimDeck), Apache-2.0; level in coarse steps, none while charging) |
-| ASUS ROG Pelta | Headset over its 2.4 GHz dongle `0B05:1B84` or USB cable `0B05:1B82` (protocol from [pelta-control](https://github.com/jimm0thy/pelta-control), MIT, from captures of Armoury Crate, as used by the original C++ BatteryHub) |
-| Redragon (Areson) | M913 Impact Elite, M915RGB-WL and other devices on the "2.4G Wireless Receiver" `25A7:FA07` / `FA08`; level in 10 % steps (protocol as documented by the original C++ BatteryHub from a capture of Redragon's software, [m913-ctl](https://github.com/Qehbr/m913-ctl) and [redragon-m913-battery-tray](https://github.com/Doomguy-BFG9000/redragon-m913-battery-tray)) |
-| Corsair | Void family headsets incl. HS70 Pro Wireless `1B1C:0A4F` over the 2.4 GHz receiver (protocol from [HeadsetControl](https://github.com/Sapd/HeadsetControl) and the Linux `hid-corsair-void` driver) |
-| Endgame Gear 4K | OP1w 4k (v1 / v2) and XM2w 4k (v1 / v2) on the 4K dongle `3367:1970` (read-only feature report `A1`, battery command `B4`; protocol from [vole](https://github.com/johanneszab/vole), MIT, and [Endgame_Gear_Web_Configurator](https://github.com/Janlhin/Endgame_Gear_Web_Configurator), GPL-3.0; no charging indication) |
-| MCHOSE keyboards (3033 receiver) | G75 V2, G87 V2, K99 V3 on the common receiver `3837:3033` ("GLW" func-config read from MCHOSE's M HUB, as documented by the original C++ BatteryHub; asked at most every 10 minutes; the K87S on the same receiver uses another protocol and is not read) |
-| SinoWealth receiver | Redragon M602-KS, M690 Pro and other mice on SinoWealth's stock receiver `258A:002F` (contributed by NeroHole, [#111](../../pull/111); protocol as documented by [BatteryTray](https://github.com/qu1ncky/BatteryTray), MIT, and OpenMouse's M690 Pro notes; no charging indication) |
-| Corsair (Bragi) | Virtuoso XT on its receiver `1B1C:0A64`, HS80 MAX Wireless on `1B1C:0A97`, and the headsets on the Bragi receivers `0A62` / `0A3E` / `0A3D` (read-only Bragi GET of the battery and charge properties, as documented by the original C++ BatteryHub; untested here) |
-| ATK headsets (serial) | ATK N9 Pro (dongle `373B:11CB`, cable `11CA`) and first-generation N9 Ultra (`1204` / `1203`), read over the dongle's USB serial port as ATK HUB does (protocol facts from [myfinder-device-battery](https://github.com/wushuai0802/myfinder-device-battery) and the original C++ BatteryHub; not while ATK's app holds the port) |
-| AULA / MCHOSE | AULA F75 / F87 Pro / F99 (Pro) and MCHOSE keyboards on the "BY" receiver `3554:FA09` / `3554:FB40` / `41E4:2001` (protocol from [Device-Battery-Info](https://github.com/PyFlat/Device-Battery-Info), [womier-l65-linux](https://github.com/deepan-alve/womier-l65-linux) and MCHOSE's M HUB, as collected in the original project); MCHOSE mice (K7, L7, M7, A7) on VID `5253` and on the receivers `3837:1001` (K7 Ultra) / `100A` / `100B` / `100C` / `1012` (protocol from [mchose-linux](https://github.com/alexfrih/mchose-linux); the `3837` ids from the original project); MCHOSE V9 Pro headset `291D:385D` (protocol from [HaloBattery](https://github.com/HeyOkay/HaloBattery), MIT) |
-| ATK Mercury | Mercury I / M1 headset on its 2.4 GHz receiver `373B:107C`, headset firmware 0007 (protocol from [Joule](https://github.com/DillanCidral/Joule) PR #79, validated on hardware there, and [TaskbarVitals](https://github.com/symNistaken/TaskbarVitals); no charging state) |
-| ATK / VXE | Mice on the NK mouse NANO dongle `373B:1216` (e.g. ATK A9 PLUS 2.0, VXE R1 NK; protocol from [HaloBattery](https://github.com/HeyOkay/HaloBattery) and [mouse-battery](https://github.com/qwr79/mouse-battery)) |
-| Darmoshark | M3 and M3S on their Telink 2.4 GHz receivers `248A:FF30` / `248A:FF31` (protocol from [darmoshark-m3-configurator](https://github.com/Barba2k2/darmoshark-m3-configurator), MIT; M3S ids from the original project) |
-| VGN / VXE / ATK keyboards (Evision) | VGN S99, V98 PRO, V98pro V2, N75 PRO, VXE75 (V2), VXE V87, ATK V75X and "Wireless Gaming Keyboard" (e.g. Feker Alice80) on the 2.4 GHz receiver `320F:5088` or USB cable `320F:5055` (protocol from [HaloBattery](https://github.com/HeyOkay/HaloBattery), MIT, and VGN HUB, as collected in the original project) |
-| Pulsar / Kysona / VXE / LAMZU (CompX) | Pulsar X2 V2 / X2H / X2A / Xlite V3 (`3554:F507` / `F508` / `F509`), Kysona M600 (`F57C` / `F57D` / `F5D5`), VXE R1 SE+ (`373B:1085`, `3554:F58F`), VXE Dragonfly R1 Pro (Max) (`3554:F58A` receiver, `F58C` cable), LAMZU Atlantis / Thorn generation on the LAMZU 4K Receiver (`3554:F510`, cable `F50F`) (protocol from the Linux `hid-pulsar` driver, [vxe-r1-pro-max-battery](https://github.com/S1berla/vxe-r1-pro-max-battery) and [HaloBattery](https://github.com/HeyOkay/HaloBattery), MIT) |
-| Scyrox / ATK 8K (CompX) | Scyrox V6 / V8 on the SCYROX 8K Dongle `3554:F5F7` or USB cable `3554:F5F6`; ATK mice (e.g. Fire X 8K) on the ATK Mouse 8K Dongle `373B:101B`, ATK A9 Ultimate / F1 V2 on the "8k dongle-L" `373B:11D9` (CompX report 8; ids and protocol from [HaloBattery](https://github.com/HeyOkay/HaloBattery) and [MouseDock](https://github.com/late-autumn-gif/mousedock), both MIT, and [BrimDeck](https://github.com/MoFeng2223/BrimDeck), Apache-2.0) |
-| AULA mice | X9 Ultra, V9 / V9 Max+ and other AULA mice on the AULA-8K Dongle `320F:22A0` (protocol from [HaloBattery](https://github.com/HeyOkay/HaloBattery), MIT, and the original C++ BatteryHub) |
-| MCHOSE (newer mice) | K7 V2 Ultra+, A7 V3 Ultra+ and the other mice on MCHOSE's newer receivers `3837:1014` / `1018` / `1016` / `102C` / `102D`, K7 V2 Ultra+ cable `3837:4028` (M HUB's device-info read, as documented by [MchoseBatteryTray](https://github.com/HifumiDaisuki01/MchoseBatteryTray), MIT, and the original C++ BatteryHub) |
-| AJAZZ AJ139 V2 MC | On its 2.4 GHz receiver `A8A5:2255` or USB cable `A8A4:2255` (protocol from [ajazz-aj139-macos](https://github.com/werquess/ajazz-aj139-macos), MIT) |
-| Jabra | Headsets behind a Jabra Link 390 dongle `0B0E:2E50` / `2E51` / `2E56` / `2E57` (GN Protocol as documented by [HeadsetControl](https://github.com/Sapd/HeadsetControl), GPL-3.0, and the original C++ BatteryHub) |
-| Rongyuan receivers | Mice and keyboards on the Rongyuan 2.4 GHz receivers of Attack Shark's web driver (88 ids, e.g. Attack Shark R3 `3151:402D`, EWEADN GS01 `3151:5031`, AJAZZ, Akko Air 01) (protocol from [BatteryTray](https://github.com/qu1ncky/BatteryTray), MIT) |
-| SONiX keyboards | AULA F108 Pro, AJAZZ AK820 MAX and AJAZZ AK35I Pro V3 on the `05AC:024F` dongle, AJAZZ AK980 V2 / AK820 Pro on `0C45:FEFE` / `0C45:FDFD`, 2.4G mode only (protocol from [sonix-keyboard-studio](https://github.com/donglover69/sonix-keyboard-studio), [ak820-rs](https://github.com/deddroid/ak820-rs) and [ak820-studio](https://github.com/usharik/ak820-studio)) |
-| WLMOUSE | Beast X, Beast X Mini, Mini Pro and Max over their receivers (protocol from [HaloBattery](https://github.com/HeyOkay/HaloBattery), MIT) |
-| DriverCore mice (VID `373E`) | Mice on the shared `373E` vendor id with its 65-byte status feature report, e.g. "R6 Mouse 2.4G" `373E:0022`, LAMZU and Arbiter Studio receivers (the WLMOUSE status query, as documented by the original C++ BatteryHub from the LAMZU / Arbiter web drivers, GPL-3.0) |
-| Flydigi | Apex 6 / Apex 6 Pro `37D7:2502` on the 2.4 GHz dongle or cable (protocol from [SDL](https://github.com/libsdl-org/SDL)'s `SDL_hidapi_flydigi.c`, zlib) |
-| HyperX | Cloud III S Wireless headset over its 2.4 GHz dongle `03F0:06BE` / `03F0:02CC` (protocol as documented by [HyperX-Battery-Tray](https://github.com/GuacamoleGH/HyperX-Battery-Tray), [hyperx-battery-logger](https://github.com/OZX-OG/hyperx-battery-logger) and [HyperHeadset](https://github.com/LennardKittner/HyperHeadset), all MIT) |
-| HyperX Cloud II Core Wireless | Over its 2.4 GHz dongle `03F0:0995` (second id `03F0:0795`) (protocol from [HaloBattery](https://github.com/HeyOkay/HaloBattery) and [HyperHeadset](https://github.com/LennardKittner/HyperHeadset), both MIT) |
-| HyperX Cloud Flight | Over its 2.4 GHz dongle `0951:1723` (and `0951:16C4`); level in 5 % steps, no level while charging; contributed by [estebannoemr](https://github.com/estebannoemr) in #93, tested on hardware (protocol from [hyperx-cloud-flight](https://github.com/kondinskis/hyperx-cloud-flight) and [hyperx-cloud-flight-wireless](https://github.com/srn/hyperx-cloud-flight-wireless), both MIT) |
-| HyperX (older headsets) | Cloud Stinger Core Wireless (`0951:170B`, PlayStation receivers `0951:1713` / `03F0:0A93` / `03F0:0B93`) and Cloud Alpha Wireless (`03F0:098D`) over their 2.4 GHz dongles (protocols from [HeadsetControl](https://github.com/Sapd/HeadsetControl), GPL-3.0, [HyperHeadset](https://github.com/LennardKittner/HyperHeadset), MIT, and [HyperBatteryMonitor](https://github.com/davidsantanaalves/HyperBatteryMonitor), MIT, as used by the original C++ BatteryHub) |
-| Logitech G321 | G321 LIGHTSPEED headset over its 2.4 GHz receiver `046D:0B39`; contributed by [Bacurovisk](https://github.com/Bacurovisk) in #107, tested on hardware (protocol from [G321 Studio](https://github.com/gleyssonsc/g321-studio), MIT) |
-| Logitech G PRO X 2 | PRO X 2 LIGHTSPEED headset over its 2.4 GHz receiver `046D:0AF7` (Logitech's "Centurion" transport, as documented by [HeadsetControl](https://github.com/Sapd/HeadsetControl), GPL-3.0, [Solaar](https://github.com/pwr-Solaar/Solaar) and [HaloBattery](https://github.com/HeyOkay/HaloBattery), MIT) |
-| Logitech G533 | Headset over its dongle `046D:0A66`, read with its fixed HID++ battery request (protocol and voltage calibration from [HeadsetControl](https://github.com/Sapd/HeadsetControl), GPL-3.0) |
-| ZOWIE | DW-series mice (FK2-DW, U2-DW, S2-DW, EC-DW ...) on the DW receiver `04A5:800A`, ZOWIE U2 on `04A5:8008`; level estimated from the battery voltage, charging on the dock inferred from its trend (protocol from [zowie-battery-tray](https://github.com/IgnacioBarb/zowie-battery-tray), MIT, as used by the original C++ BatteryHub) |
-| Keychron | Mice (M1, M2, M3, M3 mini, M6, M7) on the Keychron Link receiver `3434:D030` / `3434:D031`; keyboards on it only with the `KC_GET_BATTERY` firmware patch ([ldkv/qmk_firmware#1](https://github.com/ldkv/qmk_firmware/pull/1)), as stock keyboard firmware reports its battery over Bluetooth only (protocol as documented by the original C++ BatteryHub, GPL-3.0) |
-| ROCCAT | Syn Max Air headset over its 2.4 GHz receiver (voltage curve; coarse level while charging) |
-| FNATIC | BOLT mouse over its receiver `2F0E:0203` (the USB cable `2F0E:0204` only marks it as charging); contributed by [Jere2201](https://github.com/Jere2201) in #48, from USBPcap captures, tested on hardware |
-| Attack Shark / Delux / Inphic | Mice (e.g. X1, X11) on the Xenta 2.4 GHz receiver `1D57:FA60` (protocol from [Attack Shark Battery KDE](https://gitlab.com/gabriel17166/Attack-Shark-Battery-KDE) and [attackshark-battery-windows](https://github.com/daeoxide/attackshark-battery-windows), both MIT); Delux M900 Pro and Inphic IN10 (R) MAX on the `1D57:FA65` receiver (frames from [omarchy-delux-m900](https://github.com/AeonArcHQ/omarchy-delux-m900), MIT, and the original project) |
-| Sony | DualShock 4, DualSense, DualSense Edge (USB and Bluetooth) |
-| Apple | AirPods and Beats, from BLE proximity broadcasts (L / R / case) |
-| Bluetooth | Any device Windows knows a battery level for, plus the Google Fast Pair L / R / case split |
-| Generic HID | Devices exposing the standard Battery Strength usage |
-| Xbox | Windows.Gaming.Input (exact %) and XInput (coarse levels) |
+| Logitech | 通过 Unifying、Bolt、LIGHTSPEED、蓝牙和 USB 使用 HID++ 1.0 / 2.0，另含 G 系列耳机（电压曲线） |
+| SteelSeries | Arctis 1 / 7 / 9 / Pro、Arctis Nova（3P、5、7、7+、Pro）、GameBuds、Aerox、Prime、Rival |
+| Razer | 鼠标、键盘和接收器（90 字节 feature report 协议）；BlackShark V3 耳机通过其 HyperSpeed 接收器 `1532:057A` 或 USB 线缆 `1532:0579`（协议来自 OpenRazer PR #2794 和 Joule）；BlackShark V2 Pro（2023）通过其 HyperSpeed 接收器 `1532:0555`（协议来自 OpenRazer PR #2862 和 [blackshark-battery](https://github.com/matej-basic/blackshark-battery)，MIT）；Barracuda X Chroma 通过其 2.4 GHz 接收器 `1532:0574`（协议来自 [batterywatch](https://github.com/itayavra/batterywatch)，GPL-3.0）；Nari 通过其 2.4 GHz 接收器 `1532:051C`（请求与应答来自 [RazerNariBatteryLevel](https://github.com/Modzeleczek/RazerNariBatteryLevel) 的 Synapse 抓包，字段布局来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery)（MIT）和 [BrimDeck](https://github.com/MoFeng2223/BrimDeck)（Apache-2.0）；电量分级较粗，充电时不报电量） |
+| ASUS ROG Pelta | 耳机通过其 2.4 GHz 接收器 `0B05:1B84` 或 USB 线缆 `0B05:1B82`（协议来自 [pelta-control](https://github.com/jimm0thy/pelta-control)，MIT，源自 Armoury Crate 的抓包，原版 C++ BatteryHub 也这样实现） |
+| Redragon（Areson） | M913 Impact Elite、M915RGB-WL 及其他使用“2.4G Wireless Receiver” `25A7:FA07` / `FA08` 的设备；电量以 10% 为步进（协议由原版 C++ BatteryHub 依据 Redragon 软件的抓包记录，另见 [m913-ctl](https://github.com/Qehbr/m913-ctl) 和 [redragon-m913-battery-tray](https://github.com/Doomguy-BFG9000/redragon-m913-battery-tray)） |
+| Corsair | Void 系列耳机，含 HS70 Pro Wireless `1B1C:0A4F`（通过 2.4 GHz 接收器；协议来自 [HeadsetControl](https://github.com/Sapd/HeadsetControl) 和 Linux 的 `hid-corsair-void` 驱动） |
+| Endgame Gear 4K | OP1w 4k（v1 / v2）和 XM2w 4k（v1 / v2），使用 4K 接收器 `3367:1970`（只读 feature report `A1`，电量命令 `B4`；协议来自 [vole](https://github.com/johanneszab/vole)（MIT）和 [Endgame_Gear_Web_Configurator](https://github.com/Janlhin/Endgame_Gear_Web_Configurator)（GPL-3.0）；无充电指示） |
+| MCHOSE 键盘（3033 接收器） | G75 V2、G87 V2、K99 V3 使用通用接收器 `3837:3033`（“GLW”功能配置读取来自 MCHOSE 的 M HUB，原版 C++ BatteryHub 有记载；最多每 10 分钟询问一次；同一接收器上的 K87S 使用另一套协议，不读取） |
+| SinoWealth 接收器 | Redragon M602-KS、M690 Pro 及其他使用 SinoWealth 通用接收器 `258A:002F` 的鼠标（由 NeroHole 贡献，[#111](../../pull/111)；协议见 [BatteryTray](https://github.com/qu1ncky/BatteryTray)（MIT）和 OpenMouse 的 M690 Pro 记录；无充电指示） |
+| Corsair（Bragi） | 接收器 `1B1C:0A64` 上的 Virtuoso XT、`1B1C:0A97` 上的 HS80 MAX Wireless，以及 Bragi 接收器 `0A62` / `0A3E` / `0A3D` 上的耳机（只读的 Bragi GET 读取电量与充电属性，原版 C++ BatteryHub 有记载；这里未实测） |
+| ATK 耳机（串口） | ATK N9 Pro（接收器 `373B:11CB`、线缆 `11CA`）和第一代 N9 Ultra（`1204` / `1203`），像 ATK HUB 那样通过接收器的 USB 串口读取（协议细节来自 [myfinder-device-battery](https://github.com/wushuai0802/myfinder-device-battery) 和原版 C++ BatteryHub；ATK 自己的程序占用该串口时不读取） |
+| AULA / MCHOSE | AULA F75 / F87 Pro / F99（Pro）以及 MCHOSE 键盘，使用“BY”接收器 `3554:FA09` / `3554:FB40` / `41E4:2001`（协议来自 [Device-Battery-Info](https://github.com/PyFlat/Device-Battery-Info)、[womier-l65-linux](https://github.com/deepan-alve/womier-l65-linux) 和 MCHOSE 的 M HUB，原项目已汇总）；MCHOSE 鼠标（K7、L7、M7、A7）使用 VID `5253`，以及接收器 `3837:1001`（K7 Ultra）/ `100A` / `100B` / `100C` / `1012`（协议来自 [mchose-linux](https://github.com/alexfrih/mchose-linux)；`3837` 的 ID 来自原项目）；MCHOSE V9 Pro 耳机 `291D:385D`（协议来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery)，MIT） |
+| ATK Mercury | Mercury I / M1 耳机，使用 2.4 GHz 接收器 `373B:107C`，耳机固件 0007（协议来自 [Joule](https://github.com/DillanCidral/Joule) PR #79，已在真机验证，以及 [TaskbarVitals](https://github.com/symNistaken/TaskbarVitals)；无充电状态） |
+| ATK / VXE | 使用 NK mouse NANO 接收器 `373B:1216` 的鼠标（例如 ATK A9 PLUS 2.0、VXE R1 NK；协议来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery) 和 [mouse-battery](https://github.com/qwr79/mouse-battery)） |
+| Darmoshark | M3 和 M3S，使用其 Telink 2.4 GHz 接收器 `248A:FF30` / `248A:FF31`（协议来自 [darmoshark-m3-configurator](https://github.com/Barba2k2/darmoshark-m3-configurator)，MIT；M3S 的 ID 来自原项目） |
+| VGN / VXE / ATK 键盘（Evision） | VGN S99、V98 PRO、V98pro V2、N75 PRO、VXE75（V2）、VXE V87、ATK V75X 以及“Wireless Gaming Keyboard”（例如 Feker Alice80），使用 2.4 GHz 接收器 `320F:5088` 或 USB 线缆 `320F:5055`（协议来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery)（MIT）和 VGN HUB，原项目已汇总） |
+| Pulsar / Kysona / VXE / LAMZU（CompX） | Pulsar X2 V2 / X2H / X2A / Xlite V3（`3554:F507` / `F508` / `F509`）、Kysona M600（`F57C` / `F57D` / `F5D5`）、VXE R1 SE+（`373B:1085`、`3554:F58F`）、VXE Dragonfly R1 Pro（Max）（接收器 `3554:F58A`、线缆 `F58C`）、LAMZU Atlantis / Thorn 这一代使用 LAMZU 4K 接收器（`3554:F510`，线缆 `F50F`）（协议来自 Linux 的 `hid-pulsar` 驱动、[vxe-r1-pro-max-battery](https://github.com/S1berla/vxe-r1-pro-max-battery) 和 [HaloBattery](https://github.com/HeyOkay/HaloBattery)，MIT） |
+| Scyrox / ATK 8K（CompX） | Scyrox V6 / V8 使用 SCYROX 8K 接收器 `3554:F5F7` 或 USB 线缆 `3554:F5F6`；ATK 鼠标（例如 Fire X 8K）使用 ATK Mouse 8K 接收器 `373B:101B`，ATK A9 Ultimate / F1 V2 使用“8k dongle-L” `373B:11D9`（CompX report 8；ID 与协议来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery) 和 [MouseDock](https://github.com/late-autumn-gif/mousedock)（均 MIT），以及 [BrimDeck](https://github.com/MoFeng2223/BrimDeck)（Apache-2.0）） |
+| AULA 鼠标 | X9 Ultra、V9 / V9 Max+ 及其他 AULA 鼠标，使用 AULA-8K 接收器 `320F:22A0`（协议来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery)（MIT）和原版 C++ BatteryHub） |
+| MCHOSE（较新鼠标） | K7 V2 Ultra+、A7 V3 Ultra+ 及其他鼠标，使用 MCHOSE 较新的接收器 `3837:1014` / `1018` / `1016` / `102C` / `102D`，K7 V2 Ultra+ 线缆 `3837:4028`（M HUB 的设备信息读取，见 [MchoseBatteryTray](https://github.com/HifumiDaisuki01/MchoseBatteryTray)（MIT）和原版 C++ BatteryHub） |
+| AJAZZ AJ139 V2 MC | 使用其 2.4 GHz 接收器 `A8A5:2255` 或 USB 线缆 `A8A4:2255`（协议来自 [ajazz-aj139-macos](https://github.com/werquess/ajazz-aj139-macos)，MIT） |
+| Jabra | Jabra Link 390 接收器 `0B0E:2E50` / `2E51` / `2E56` / `2E57` 后面的耳机（GN Protocol，见 [HeadsetControl](https://github.com/Sapd/HeadsetControl)（GPL-3.0）和原版 C++ BatteryHub） |
+| Rongyuan 接收器 | Attack Shark 网页驱动所用 Rongyuan 2.4 GHz 接收器上的鼠标和键盘（88 个 ID，例如 Attack Shark R3 `3151:402D`、EWEADN GS01 `3151:5031`、AJAZZ、Akko Air 01）（协议来自 [BatteryTray](https://github.com/qu1ncky/BatteryTray)，MIT） |
+| SONiX 键盘 | AULA F108 Pro、AJAZZ AK820 MAX 和 AJAZZ AK35I Pro V3 使用 `05AC:024F` 接收器，AJAZZ AK980 V2 / AK820 Pro 使用 `0C45:FEFE` / `0C45:FDFD`，仅在 2.4G 模式下可用（协议来自 [sonix-keyboard-studio](https://github.com/donglover69/sonix-keyboard-studio)、[ak820-rs](https://github.com/deddroid/ak820-rs) 和 [ak820-studio](https://github.com/usharik/ak820-studio)） |
+| WLMOUSE | Beast X、Beast X Mini、Mini Pro 和 Max，通过各自的接收器读取（协议来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery)，MIT） |
+| DriverCore 鼠标（VID `373E`） | 共用 `373E` 厂商 ID 并使用其 65 字节状态 feature report 的鼠标，例如“R6 Mouse 2.4G” `373E:0022`、LAMZU 和 Arbiter Studio 的接收器（WLMOUSE 状态查询，原版 C++ BatteryHub 依据 LAMZU / Arbiter 网页驱动记录，GPL-3.0） |
+| Flydigi | Apex 6 / Apex 6 Pro `37D7:2502`，通过 2.4 GHz 接收器或线缆（协议来自 [SDL](https://github.com/libsdl-org/SDL) 的 `SDL_hidapi_flydigi.c`，zlib） |
+| HyperX | Cloud III S Wireless 耳机，通过其 2.4 GHz 接收器 `03F0:06BE` / `03F0:02CC`（协议见 [HyperX-Battery-Tray](https://github.com/GuacamoleGH/HyperX-Battery-Tray)、[hyperx-battery-logger](https://github.com/OZX-OG/hyperx-battery-logger) 和 [HyperHeadset](https://github.com/LennardKittner/HyperHeadset)，均 MIT） |
+| HyperX Cloud II Core Wireless | 通过其 2.4 GHz 接收器 `03F0:0995`（第二个 ID `03F0:0795`）（协议来自 [HaloBattery](https://github.com/HeyOkay/HaloBattery) 和 [HyperHeadset](https://github.com/LennardKittner/HyperHeadset)，均 MIT） |
+| HyperX Cloud Flight | 通过其 2.4 GHz 接收器 `0951:1723`（以及 `0951:16C4`）；电量以 5% 为步进，充电时不报电量；由 [estebannoemr](https://github.com/estebannoemr) 在 #93 贡献并在真机测试（协议来自 [hyperx-cloud-flight](https://github.com/kondinskis/hyperx-cloud-flight) 和 [hyperx-cloud-flight-wireless](https://github.com/srn/hyperx-cloud-flight-wireless)，均 MIT） |
+| HyperX（较早耳机） | Cloud Stinger Core Wireless（`0951:170B`，PlayStation 接收器 `0951:1713` / `03F0:0A93` / `03F0:0B93`）和 Cloud Alpha Wireless（`03F0:098D`），通过各自的 2.4 GHz 接收器（协议来自 [HeadsetControl](https://github.com/Sapd/HeadsetControl)（GPL-3.0）、[HyperHeadset](https://github.com/LennardKittner/HyperHeadset)（MIT）和 [HyperBatteryMonitor](https://github.com/davidsantanaalves/HyperBatteryMonitor)（MIT），原版 C++ BatteryHub 也这样实现） |
+| Logitech G321 | G321 LIGHTSPEED 耳机，通过其 2.4 GHz 接收器 `046D:0B39`；由 [Bacurovisk](https://github.com/Bacurovisk) 在 #107 贡献并在真机测试（协议来自 [G321 Studio](https://github.com/gleyssonsc/g321-studio)，MIT） |
+| Logitech G PRO X 2 | PRO X 2 LIGHTSPEED 耳机，通过其 2.4 GHz 接收器 `046D:0AF7`（Logitech 的“Centurion”传输层，见 [HeadsetControl](https://github.com/Sapd/HeadsetControl)（GPL-3.0）、[Solaar](https://github.com/pwr-Solaar/Solaar) 和 [HaloBattery](https://github.com/HeyOkay/HaloBattery)（MIT）） |
+| Logitech G533 | 耳机通过其接收器 `046D:0A66`，使用固定的 HID++ 电量请求读取（协议与电压标定来自 [HeadsetControl](https://github.com/Sapd/HeadsetControl)，GPL-3.0） |
+| ZOWIE | DW 系列鼠标（FK2-DW、U2-DW、S2-DW、EC-DW 等）使用 DW 接收器 `04A5:800A`，ZOWIE U2 使用 `04A5:8008`；电量由电池电压估算，是否在充电座上则由其趋势推断（协议来自 [zowie-battery-tray](https://github.com/IgnacioBarb/zowie-battery-tray)，MIT，原版 C++ BatteryHub 也这样实现） |
+| Keychron | 鼠标（M1、M2、M3、M3 mini、M6、M7）使用 Keychron Link 接收器 `3434:D030` / `3434:D031`；键盘只有在刷了 `KC_GET_BATTERY` 固件补丁后才支持（[ldkv/qmk_firmware#1](https://github.com/ldkv/qmk_firmware/pull/1)），因为原厂键盘固件只通过蓝牙上报电量（协议见原版 C++ BatteryHub，GPL-3.0） |
+| ROCCAT | Syn Max Air 耳机，通过其 2.4 GHz 接收器（电压曲线；充电时电量较粗） |
+| FNATIC | BOLT 鼠标通过其接收器 `2F0E:0203`（USB 线缆 `2F0E:0204` 只用于标记“正在充电”）；由 [Jere2201](https://github.com/Jere2201) 在 #48 根据 USBPcap 抓包贡献，并在真机测试 |
+| Attack Shark / Delux / Inphic | 鼠标（例如 X1、X11）使用 Xenta 2.4 GHz 接收器 `1D57:FA60`（协议来自 [Attack Shark Battery KDE](https://gitlab.com/gabriel17166/Attack-Shark-Battery-KDE) 和 [attackshark-battery-windows](https://github.com/daeoxide/attackshark-battery-windows)，均 MIT）；Delux M900 Pro 和 Inphic IN10 (R) MAX 使用 `1D57:FA65` 接收器（报文来自 [omarchy-delux-m900](https://github.com/AeonArcHQ/omarchy-delux-m900)（MIT）和原项目） |
+| Sony | DualShock 4、DualSense、DualSense Edge（USB 和蓝牙） |
+| Apple | AirPods 和 Beats，通过 BLE 近距广播读取（左 / 右 / 充电盒） |
+| 蓝牙 | Windows 知道电量的任何设备，另加 Google Fast Pair 的左 / 右 / 盒电量拆分 |
+| 通用 HID | 暴露标准 Battery Strength usage 的设备 |
+| Xbox | Windows.Gaming.Input（精确百分比）和 XInput（较粗分级） |
 
-Device not shown? Use *Request support for a device...* in the right-click menu (see above). More brands from the original project can be added as one file each in `src/drivers/`; pull requests are welcome (the ROCCAT, FNATIC BOLT and HyperX Cloud Flight drivers came from them). Devices can be excluded with `HKCU\Software\WirelessBattery\IgnoreDevices` (`VID:PID` list, the same setting as the original).
+设备没显示？用右键菜单里的*请求支持某个设备...*（见上文）。原项目里的更多品牌可以每个文件一款地加到 `src/drivers/`；欢迎提交 pull request（ROCCAT、FNATIC BOLT 和 HyperX Cloud Flight 驱动就是这样来的）。可以用 `HKCU\Software\WirelessBattery\IgnoreDevices`（`VID:PID` 列表，与原版同一项设置）排除设备。
 
-## Unsupported devices
+## 暂不支持的设备
 
-Devices that were requested but cannot be supported for now, and why. Most of them can still show their battery over **Bluetooth**, if the device has it: whenever Windows shows the level in *Settings → Bluetooth & devices*, BatteryHub shows it too. If you know how one of these reports its battery (a capture, a project that reads it), please comment on its issue; `batteryhub-taskbar.exe --listen VID:PID` records what a receiver sends without sending anything to it.
+这些是被请求过但目前无法支持的设备，以及原因。其中大多数仍可以通过**蓝牙**显示电量（如果设备支持）：只要 Windows 在*设置 → 蓝牙和设备*里显示电量，BatteryHub 就会显示。如果你知道其中某款设备如何上报电量（抓包、能读取它的项目），请在其 issue 下留言；`batteryhub-taskbar.exe --listen VID:PID` 会记录接收器发来的内容，且不会向它发送任何东西。
 
-| Device | VID:PID | Why | Issue |
+| 设备 | VID:PID | 原因 | Issue |
 |---|---|---|---|
-| Logitech G435 headset (LIGHTSPEED) | `046D:0ACB`, `046D:0ADF` | Its dongle gives the battery only in bootloader mode, which cuts the audio; BatteryHub never touches it. Over Bluetooth it works. | [#10](../../issues/10), [#56](../../issues/56), [#92](../../issues/92), [#119](../../issues/119), [#138](../../issues/138) |
-| Havit Fuxi-H3 and the same dongle in Redragon / Rexus / Ardor headsets | `040B:0897` | The dongle sends only volume / mute keys; the command Havit's app uses is not known | [#6](../../issues/6), [#79](../../issues/79) |
-| Mad Dog GH750K, IO Graphite 2 Pro Wireless (JieLi dongle), "GAMING HEADSET B2", unbranded G435 look-alike, Attack Shark L80 Pro, "TA3000" headset | `4C4A:4155`, `3634:4155` | No documented battery query; the dongle's vendor channels belong to the audio chip (firmware / settings), so commands are not guessed | [#1](../../issues/1), [#30](../../issues/30), [#97](../../issues/97), [#114](../../issues/114), [#120](../../issues/120), [#132](../../issues/132) |
-| Bloody MR710 headset | `10D6:4801` | The Actions-chip dongle has only audio, media keys and the chip's own channels; no documented battery query. Over Bluetooth it works when Windows shows the level. | [#31](../../issues/31) |
-| 8BitDo Ultimate 2C Wireless in X-input mode | `2DC8:310A` | The dongle shows Windows a wired Xbox pad (no level), and its configuration channel's battery read is documented only for other 8BitDo models; commands are not guessed | [#106](../../issues/106) |
-| UGREEN 2.4 GHz receiver | `2B89:0043` | The receiver has no battery or link-state channel (UGREEN's own software doesn't read it either). Over Bluetooth it works when Windows shows the level. | [#108](../../issues/108) |
-| 8BitDo Retro Mechanical Keyboard receiver | `2DC8:5201` | No documented battery command; its vendor channel is also the firmware-update channel, so commands are not guessed | [#5](../../issues/5) |
-| Mojhon Storm / BIGBIG WON controller | `E2B7:122C` | XInput dongle that reports no battery level | [#8](../../issues/8) |
-| Rapoo VT9PRO 4K | `24AE:1211` | No documented protocol | [#11](../../issues/11) |
-| Edifier HECATE G5 Wireless | `35BB:A008` | No documented protocol for its headset dongle (the supported HECATE mice use other ids) | [#15](../../issues/15), [#131](../../issues/131) |
-| "RS 8" / ELECFOX keyboards on `36B0:3005` | `36B0:3005` | A VIA-firmware raw HID channel only; a battery read over it is documented only for other `36B0` firmware, so commands are not guessed. Over Bluetooth it works when Windows shows the level. | [#135](../../issues/135) |
-| "2.4G Wireless Device" keyboard | `1A2C:7FFF` | No documented protocol (not the Semico `AA 55 CC 33` layout of the `1A2C:8FFF` keyboards). Over Bluetooth it works when Windows shows the level. | [#136](../../issues/136) |
-| Maono DM40 / DM40 Pro wireless microphone (receiver) | `352F:0405` | The receiver only has a consumer-control collection with 65-byte reports; the battery level is read by Maono's own app over an undocumented protocol, so commands are not guessed. | [#140](../../issues/140) |
-| Royal Kludge RK96 (2.4G Wireless Receiver) | `25A7:FA70` | No documented protocol for this receiver (the RK MG6 Pro driver is for `2E3C` ids). Over Bluetooth it works when Windows shows the level. | [#137](../../issues/137) |
-| Unbranded "2.4G Wireless Receiver" mice | `260D:1026`, `3151:3020` | No documented protocol | [#14](../../issues/14), [#16](../../issues/16) |
-| Mice on the AULA "BY" receiver | `3554:FA09` | Only AULA / MCHOSE keyboards answer on this receiver (those are supported) | [#17](../../issues/17) |
-| Sinowealth "Gaming Keyboard" | `258A:010C` | No documented protocol | [#19](../../issues/19) |
-| VGN Dragonfly 3 Pro | `391D:1A03` | No documented protocol for this receiver (not one of the Rongyuan-protocol VGN ids, and its vendor collections differ); V HUB's query is not known, so commands are not guessed. Over Bluetooth it works when Windows shows the level. | [#125](../../issues/125) |
-| Dark Project ALU87A Onionite Wireless ("ONIONITE87_2.4G") | `342D:E411` | No documented protocol for this dongle; its raw HID channel is not known to answer a battery query, so commands are not guessed | [#122](../../issues/122) |
-| Bloody R36 Ultra | `1956:3001` | The documented Bloody protocol does not answer on this mouse | [#24](../../issues/24) |
-| ThinkPad X1 Presenter Mouse, ProtoArc EM11 NL (Bluetooth) | Bluetooth | Windows reports no battery level for them over Bluetooth; their 2.4 GHz receivers are not identified yet | [#49](../../issues/49), [#50](../../issues/50) |
-| Dark Project Nexus | `3554:F53E` | Not among the documented CompX (Pulsar / Kysona) ids; commands are not guessed | [#52](../../issues/52) |
-| Glorious GHS Wireless InfinitePlay headset | `3794:D005` | No documented battery protocol for its dongle | [#54](../../issues/54) |
-| Keychron Q6 HE (and other Keychron QMK keyboards on the cable) | `3434:0B60` | Keychron's stock firmware reports the battery only over Bluetooth (works there) | [#59](../../issues/59) |
-| Corsair Sabre v3 Pro Wireless (Slipstream V2 receiver) | `1B1C:2B42` | The only documented battery read ([OpenLinkHub](https://github.com/jurkovic-nikola/OpenLinkHub)) first logs in and switches the receiver to software mode, which takes over the mouse's onboard settings; BatteryHub only reads | [#98](../../issues/98) |
-| Keychron keyboards on the Keychron Link receiver (stock firmware), e.g. Q1 HE | `3434:D030` | Stock firmware reports the keyboard's battery over Bluetooth only, never through the receiver. Over Bluetooth it works. | [#61](../../issues/61) |
-| DAREU EK75 Pro | `260D:0042` | No documented protocol. Over Bluetooth it works when Windows shows the level. | [#63](../../issues/63) |
-| L90 headset (C-Media dongle) | `0D8C:0371` | The dongle has only audio and media keys, no vendor channel | [#64](../../issues/64) |
-| ONIKUMA GT808 headset | `3206:0861` | The dongle has only audio and media keys, no vendor channel. Over Bluetooth it works when Windows shows the level. | [#65](../../issues/65) |
-| "2.4G Wireless Device" mouse | `25A7:FA17` | No documented protocol (not the CompX / Areson layout used on other `25A7` receivers) | [#66](../../issues/66) |
-| Akko Verge S9 Ultra headset | `36EB:1087` | No documented battery protocol for its dongle; commands are not guessed. Over Bluetooth it works when Windows shows the level. | [#75](../../issues/75) |
-| EKSA E1000 WT headset | `3206:109D` | No documented battery protocol for its dongle; commands are not guessed | [#76](../../issues/76) |
-| HATOR Pulsar 3 Wireless | `379A:3907` | No documented protocol for HATOR's `379A` mouse receiver; commands are not guessed. Over Bluetooth it works when Windows shows the level. | [#73](../../issues/73) |
-| beyerdynamic MMX 200 Wireless | `2E50:002F` | No documented battery protocol for its dongle; its vendor channels are not guessed. Over Bluetooth it works when Windows shows the level. | [#40](../../issues/40) |
-| Zoom75 Wireless (Meletrix) | `6D66:8888` | Its VIA raw HID channel has no documented battery command. Over Bluetooth it works when Windows shows the level. | [#42](../../issues/42) |
-| T87 keyboard | `056D:C077` | No documented protocol | [#44](../../issues/44) |
-| Keychron TurboLink 8K receiver | `3434:D05A` | Not among the documented Keychron receiver ids; which Launcher protocol it uses is not confirmed, so commands are not guessed | [#45](../../issues/45) |
-| Redragon K1NG 4K PRO (M916 PRO 4K) | `3554:F54F` | Not among the documented CompX (Pulsar / Kysona) ids; commands are not guessed. Over Bluetooth it works when Windows shows the level. | [#46](../../issues/46) |
-| PIAO-2.4G mouse | `372E:1014` | No documented protocol for this `372E` receiver | [#47](../../issues/47) |
-| AJAZZ NJ07 (Bluetooth LE) | — | Windows reads no battery level from it over Bluetooth; its 2.4 GHz dongle has not been reported yet | [#69](../../issues/69) |
-| VXE V1 (VGN Siren V1) headset | `10D6:0016` | The Actions-chip dongle's vendor channels are undocumented; no battery query is known. Over Bluetooth it works when Windows shows the level. | [#85](../../issues/85) |
-| ASTRO A50 X (base station) | `046D:0B0B` | Its only vendor channel (`FF32:0074`) is not HID++ and has no documented battery command; G HUB reads it with its own protocol, which is not published | [#105](../../issues/105) |
+| Logitech G435 耳机（LIGHTSPEED） | `046D:0ACB`、`046D:0ADF` | 它的接收器只在 bootloader 模式下给出电量，而这会中断音频；BatteryHub 从不触碰它。通过蓝牙可以。 | [#10](../../issues/10)、[#56](../../issues/56)、[#92](../../issues/92)、[#119](../../issues/119)、[#138](../../issues/138) |
+| Havit Fuxi-H3，以及 Redragon / Rexus / Ardor 耳机里的同款接收器 | `040B:0897` | 该接收器只发送音量 / 静音按键；Havit 自家程序用的命令未知 | [#6](../../issues/6)、[#79](../../issues/79) |
+| Mad Dog GH750K、IO Graphite 2 Pro Wireless（JieLi 接收器）、“GAMING HEADSET B2”、无品牌的 G435 仿品、Attack Shark L80 Pro、“TA3000”耳机 | `4C4A:4155`、`3634:4155` | 没有公开的电量查询方式；接收器的厂商通道属于音频芯片（固件 / 设置），因此不去猜命令 | [#1](../../issues/1)、[#30](../../issues/30)、[#97](../../issues/97)、[#114](../../issues/114)、[#120](../../issues/120)、[#132](../../issues/132) |
+| Bloody MR710 耳机 | `10D6:4801` | 这颗 Actions 芯片的接收器只有音频、媒体键和芯片自身通道；没有公开的电量查询方式。通过蓝牙可用，前提是 Windows 显示电量。 | [#31](../../issues/31) |
+| 8BitDo Ultimate 2C Wireless（X-input 模式） | `2DC8:310A` | 该接收器在 Windows 看来是有线 Xbox 手柄（没有电量），其配置通道的电量读取只对其他 8BitDo 型号有说明；因此不去猜命令 | [#106](../../issues/106) |
+| UGREEN 2.4 GHz 接收器 | `2B89:0043` | 该接收器没有电量或链路状态通道（UGREEN 自家软件也不读）。通过蓝牙可用，前提是 Windows 显示电量。 | [#108](../../issues/108) |
+| 8BitDo Retro Mechanical Keyboard 接收器 | `2DC8:5201` | 没有公开的电量命令；它的厂商通道同时也是固件更新通道，因此不去猜命令 | [#5](../../issues/5) |
+| Mojhon Storm / BIGBIG WON 手柄 | `E2B7:122C` | 不上报电量的 XInput 接收器 | [#8](../../issues/8) |
+| Rapoo VT9PRO 4K | `24AE:1211` | 没有公开的协议 | [#11](../../issues/11) |
+| Edifier HECATE G5 Wireless | `35BB:A008` | 其耳机接收器没有公开协议（受支持的 HECATE 鼠标用的是其他 ID） | [#15](../../issues/15)、[#131](../../issues/131) |
+| `36B0:3005` 上的“RS 8” / ELECFOX 键盘 | `36B0:3005` | 只有一个基于 VIA 固件的原始 HID 通道；其上的电量读取只对 `36B0` 的其他固件有说明，因此不去猜命令。通过蓝牙可用，前提是 Windows 显示电量。 | [#135](../../issues/135) |
+| “2.4G Wireless Device”键盘 | `1A2C:7FFF` | 没有公开的协议（不是 `1A2C:8FFF` 键盘那套 Semico `AA 55 CC 33` 布局）。通过蓝牙可用，前提是 Windows 显示电量。 | [#136](../../issues/136) |
+| Maono DM40 / DM40 Pro 无线麦克风（接收器） | `352F:0405` | 该接收器只有一个消费类控制集合和 65 字节报文；电量由 Maono 自己的程序通过未公开协议读取，因此不去猜命令。 | [#140](../../issues/140) |
+| Royal Kludge RK96（2.4G Wireless Receiver） | `25A7:FA70` | 该接收器没有公开协议（RK MG6 Pro 驱动针对的是 `2E3C` 的 ID）。通过蓝牙可用，前提是 Windows 显示电量。 | [#137](../../issues/137) |
+| 无品牌的“2.4G Wireless Receiver”鼠标 | `260D:1026`、`3151:3020` | 没有公开的协议 | [#14](../../issues/14)、[#16](../../issues/16) |
+| AULA “BY”接收器上的鼠标 | `3554:FA09` | 该接收器上只有 AULA / MCHOSE 键盘会应答（这些已支持） | [#17](../../issues/17) |
+| Sinowealth “Gaming Keyboard” | `258A:010C` | 没有公开的协议 | [#19](../../issues/19) |
+| VGN Dragonfly 3 Pro | `391D:1A03` | 该接收器没有公开协议（不属于 Rongyuan 协议的 VGN ID，厂商集合也不同）；V HUB 的查询方式未知，因此不去猜命令。通过蓝牙可用，前提是 Windows 显示电量。 | [#125](../../issues/125) |
+| Dark Project ALU87A Onionite Wireless（“ONIONITE87_2.4G”） | `342D:E411` | 该接收器没有公开协议；其原始 HID 通道已知不会应答电量查询，因此不去猜命令 | [#122](../../issues/122) |
+| Bloody R36 Ultra | `1956:3001` | 有公开记录的 Bloody 协议在这款鼠标上没有应答 | [#24](../../issues/24) |
+| ThinkPad X1 Presenter Mouse、ProtoArc EM11 NL（蓝牙） | 蓝牙 | Windows 不通过蓝牙上报它们的电量；它们的 2.4 GHz 接收器尚未确认 | [#49](../../issues/49)、[#50](../../issues/50) |
+| Dark Project Nexus | `3554:F53E` | 不在已记录的 CompX（Pulsar / Kysona）ID 之中；不去猜命令 | [#52](../../issues/52) |
+| Glorious GHS Wireless InfinitePlay 耳机 | `3794:D005` | 其接收器没有公开的电量协议 | [#54](../../issues/54) |
+| Keychron Q6 HE（以及线缆连接的其他 Keychron QMK 键盘） | `3434:0B60` | Keychron 原厂固件只通过蓝牙上报电量（蓝牙下可用） | [#59](../../issues/59) |
+| Corsair Sabre v3 Pro Wireless（Slipstream V2 接收器） | `1B1C:2B42` | 唯一有记录的读取方式（[OpenLinkHub](https://github.com/jurkovic-nikola/OpenLinkHub)）会先登录并把接收器切到软件模式，从而接管鼠标的板载设置；BatteryHub 只读不写 | [#98](../../issues/98) |
+| Keychron Link 接收器上的 Keychron 键盘（原厂固件），例如 Q1 HE | `3434:D030` | 原厂固件只通过蓝牙上报键盘电量，从不经接收器。通过蓝牙可用。 | [#61](../../issues/61) |
+| DAREU EK75 Pro | `260D:0042` | 没有公开的协议。通过蓝牙可用，前提是 Windows 显示电量。 | [#63](../../issues/63) |
+| L90 耳机（C-Media 接收器） | `0D8C:0371` | 该接收器只有音频和媒体键，没有厂商通道 | [#64](../../issues/64) |
+| ONIKUMA GT808 耳机 | `3206:0861` | 该接收器只有音频和媒体键，没有厂商通道。通过蓝牙可用，前提是 Windows 显示电量。 | [#65](../../issues/65) |
+| “2.4G Wireless Device”鼠标 | `25A7:FA17` | 没有公开的协议（不是其他 `25A7` 接收器所用的 CompX / Areson 布局） | [#66](../../issues/66) |
+| Akko Verge S9 Ultra 耳机 | `36EB:1087` | 其接收器没有公开的电量协议；不去猜命令。通过蓝牙可用，前提是 Windows 显示电量。 | [#75](../../issues/75) |
+| EKSA E1000 WT 耳机 | `3206:109D` | 其接收器没有公开的电量协议；不去猜命令 | [#76](../../issues/76) |
+| HATOR Pulsar 3 Wireless | `379A:3907` | HATOR 的 `379A` 鼠标接收器没有公开协议；不去猜命令。通过蓝牙可用，前提是 Windows 显示电量。 | [#73](../../issues/73) |
+| beyerdynamic MMX 200 Wireless | `2E50:002F` | 其接收器没有公开的电量协议；不去猜厂商通道。通过蓝牙可用，前提是 Windows 显示电量。 | [#40](../../issues/40) |
+| Zoom75 Wireless（Meletrix） | `6D66:8888` | 它的 VIA 原始 HID 通道没有公开的电量命令。通过蓝牙可用，前提是 Windows 显示电量。 | [#42](../../issues/42) |
+| T87 键盘 | `056D:C077` | 没有公开的协议 | [#44](../../issues/44) |
+| Keychron TurboLink 8K 接收器 | `3434:D05A` | 不在已记录的 Keychron 接收器 ID 之中；它使用哪套 Launcher 协议未确认，因此不去猜命令 | [#45](../../issues/45) |
+| Redragon K1NG 4K PRO（M916 PRO 4K） | `3554:F54F` | 不在已记录的 CompX（Pulsar / Kysona）ID 之中；不去猜命令。通过蓝牙可用，前提是 Windows 显示电量。 | [#46](../../issues/46) |
+| PIAO-2.4G 鼠标 | `372E:1014` | 该 `372E` 接收器没有公开协议 | [#47](../../issues/47) |
+| AJAZZ NJ07（蓝牙 LE） | — | Windows 无法通过蓝牙从它读取电量；其 2.4 GHz 接收器还没有人反馈过 | [#69](../../issues/69) |
+| VXE V1（VGN Siren V1）耳机 | `10D6:0016` | 这颗 Actions 芯片接收器的厂商通道未公开；不知道电量查询方式。通过蓝牙可用，前提是 Windows 显示电量。 | [#85](../../issues/85) |
+| ASTRO A50 X（基站） | `046D:0B0B` | 它唯一的厂商通道（`FF32:0074`）不是 HID++，也没有公开的电量命令；G HUB 用自己未公开的协议读取 | [#105](../../issues/105) |
 
-## Testing
+## 测试
 
-- **Unit tests** (`cargo test --lib`) decode recorded device reports without the hardware: SteelSeries Arctis Nova status blocks, DualSense / DualShock 4 input reports, AirPods proximity broadcasts, Google Fast Pair battery fields, Logitech voltage curves and receiver grouping, and the report decoders of every vendor driver (frames taken from the protocol sources). They also cover the 24-hour history, the card's blur, when a device is removed or shown as asleep, warning levels, colours, menu ids, the GitHub release parser, SHA-256 and version comparison.
-- The **setup** has its own tests (autostart matching never touches the original app, version handling).
-- **CI** ([GitHub Actions](.github/workflows/ci.yml)) runs all tests and builds the program and the setup on every push.
-- **Resource usage** is measured with [bench/compare.ps1](bench/compare.ps1) (two programs side by side) and [bench/measure.ps1](bench/measure.ps1).
+- **单元测试**（`cargo test --lib`）在没有硬件的情况下解码录制的设备报文：SteelSeries Arctis Nova 状态块、DualSense / DualShock 4 输入报文、AirPods 近距广播、Google Fast Pair 电量字段、Logitech 电压曲线与接收器分组，以及每个厂商驱动的报文解码器（报文取自协议来源）。它们还覆盖 24 小时历史、卡片的模糊效果、设备被移除或显示为休眠、警告阈值、颜色、菜单 ID、GitHub 发布解析、SHA-256 与版本比较。
+- **安装程序**有自己的测试（开机启动项匹配从不触碰原版程序、版本处理）。
+- **CI**（[GitHub Actions](.github/workflows/ci.yml)）在每次推送时运行全部测试，并构建程序与安装程序。
+- **资源占用**用 [bench/compare.ps1](bench/compare.ps1)（两个程序并排运行）和 [bench/measure.ps1](bench/measure.ps1) 测量。
 
-## Building from source
+## 从源码构建
 
-Requirements: Rust 1.99 or newer (stable, MSVC toolchain; the crates use the 2024 edition) and Visual Studio Build Tools with the Windows SDK (`rc.exe` embeds the icon).
+要求：Rust 1.99 或更高版本（stable，MSVC 工具链；各 crate 使用 2024 edition），以及带 Windows SDK 的 Visual Studio Build Tools（`rc.exe` 用于嵌入图标）。
 
 ```powershell
 .\build-release.ps1
 ```
 
-This builds the program, then the setup with the program embedded (`installer/`, `BH_PAYLOAD_DIR`), and writes `release\BatteryHub-Taskbar-Setup-v1.6.exe` and `SHA256SUMS.txt`. The version comes from the `VERSION` file (up to four parts, e.g. `1.0.1.1`).
+这会先构建程序，再构建内嵌该程序的安装程序（`installer/`、`BH_PAYLOAD_DIR`），并生成 `release\BatteryHub-Taskbar-Setup-v1.6.exe` 和 `SHA256SUMS.txt`。版本号来自 `VERSION` 文件（最多四段，例如 `1.0.1.1`）。
 
-| Path | Contents |
+| 路径 | 内容 |
 |---|---|
-| `src/` | Library: HID layer, device drivers, BLE watcher, settings, update check, UI and setup helpers |
-| `src/bin/taskbar.rs` | The taskbar program |
-| `installer/` | The setup (`src/setup.rs`) |
-| `res/` | Icon (`make_icon.py` draws it), manifest, resource script, README screenshots |
-| `bench/` | Resource measurement scripts and results |
-| `.github/workflows/ci.yml` | CI: tests and builds on every push |
-| `examples/list.rs` | Console diagnostics: `cargo run --example list -- --dump --ble`, `-- --update` |
+| `src/` | 库：HID 层、设备驱动、BLE 监听、设置、更新检查、界面与安装辅助 |
+| `src/bin/taskbar.rs` | 任务栏程序 |
+| `installer/` | 安装程序（`src/setup.rs`） |
+| `res/` | 图标（`make_icon.py` 生成）、清单文件、资源脚本、README 截图 |
+| `bench/` | 资源测量脚本与结果 |
+| `.github/workflows/ci.yml` | CI：每次推送时测试并构建 |
+| `examples/list.rs` | 控制台诊断：`cargo run --example list -- --dump --ble`、`-- --update` |
 
-## License
+## 许可证
 
-GPL-3.0-or-later, the same as the original project. See [LICENSE](LICENSE).
+GPL-3.0-or-later，与原项目一致。见 [LICENSE](LICENSE)。

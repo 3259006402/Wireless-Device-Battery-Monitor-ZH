@@ -124,7 +124,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: format!("endgame:{}", hex4(DONGLE_4K)),
         name: name.into(),
         kind: DeviceKind::Mouse,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, DONGLE_4K)),
         grace_sec: 1800,
         ..Default::default()

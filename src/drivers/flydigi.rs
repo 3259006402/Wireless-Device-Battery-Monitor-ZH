@@ -107,7 +107,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: "flydigi:2502".into(),
         name: "Flydigi Apex 6".into(),
         kind: DeviceKind::Gamepad,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, PID)),
         grace_sec: 60,
         ..Default::default()
@@ -115,7 +115,7 @@ pub fn poll(ctx: &mut PollContext) {
     let s = match colls.iter().find_map(query) {
         Some(r) => DeviceStatus {
             name: r.name.into(),
-            via: if r.wireless { "2.4 GHz receiver".into() } else { "USB cable".into() },
+            via: if r.wireless { "2.4 GHz 接收器".into() } else { "USB 线缆".into() },
             percent: r.percent,
             charging: r.charging,
             full: r.full,

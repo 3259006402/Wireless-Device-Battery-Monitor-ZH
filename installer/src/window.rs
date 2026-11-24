@@ -163,20 +163,20 @@ impl Ui {
     fn start_install(&mut self, release: Option<Release>) {
         let (ed, payload, st, c, h) = (self.ed, self.payload, self.st.clone(), self.choices, self.hwnd.0 as usize);
         self.title = match (&release, setup::plan(&st)) {
-            (Some(r), _) => format!("Installing BatteryHub v{}", inst::label_of(&r.version).trim_start_matches('v')),
-            (None, Plan::Install) => format!("Installing BatteryHub {}", self.version_label()),
-            (None, Plan::Update(_)) => format!("Updating to {}", self.version_label()),
-            (None, Plan::Reinstall) => format!("Reinstalling {}", self.version_label()),
-            (None, Plan::Downgrade(_)) => format!("Going back to {}", self.version_label()),
+            (Some(r), _) => format!("正在安装 BatteryHub v{}", inst::label_of(&r.version).trim_start_matches('v')),
+            (None, Plan::Install) => format!("正在安装 BatteryHub {}", self.version_label()),
+            (None, Plan::Update(_)) => format!("正在更新到 {}", self.version_label()),
+            (None, Plan::Reinstall) => format!("正在重新安装 {}", self.version_label()),
+            (None, Plan::Downgrade(_)) => format!("正在回退到 {}", self.version_label()),
         };
         self.begin_work();
         let sink = self.log_sink();
         std::thread::spawn(move || {
-            let log = Log::new(&format!("{} {} - Setup", ed.name, inst::version_label()), Some(sink));
+            let log = Log::new(&format!("{} {} - 安装程序", ed.name, inst::version_label()), Some(sink));
             let progress = |f: f32, t: &str| post(h, Work::Progress(f, t.to_string()));
             let r = match &release {
-                Some(r) => setup::install_release(&log, r, &c, &progress).map(|_| format!("BatteryHub v{} is installed.", r.version)),
-                None => setup::install(&ed, payload, &log, &st, &c, &progress).map(|_| format!("BatteryHub {} is installed.", inst::version_label())),
+                Some(r) => setup::install_release(&log, r, &c, &progress).map(|_| format!("已安装 BatteryHub v{}。", r.version)),
+                None => setup::install(&ed, payload, &log, &st, &c, &progress).map(|_| format!("已安装 BatteryHub {}。", inst::version_label())),
             };
             post(h, Work::Finished(r));
         });
@@ -184,18 +184,18 @@ impl Ui {
 
     fn start_uninstall(&mut self) {
         let (ed, st, purge, h) = (self.ed, self.st.clone(), self.purge, self.hwnd.0 as usize);
-        self.title = "Uninstalling BatteryHub".into();
+        self.title = "正在卸载 BatteryHub".into();
         self.uninstalled = true;
         self.begin_work();
         let sink = self.log_sink();
         std::thread::spawn(move || {
-            let log = Log::new(&format!("{} {} - Uninstall", ed.name, inst::version_label()), Some(sink));
+            let log = Log::new(&format!("{} {} - 卸载", ed.name, inst::version_label()), Some(sink));
             let progress = |f: f32, t: &str| post(h, Work::Progress(f, t.to_string()));
             let r = setup::uninstall(&ed, &log, &st, purge, &progress).map(|_| {
                 if purge {
-                    "BatteryHub was removed, with its settings and battery history.".to_string()
+                    "BatteryHub 已卸载，设置和电量历史一并删除。".to_string()
                 } else {
-                    "BatteryHub was removed. Your settings and battery history were kept for a later install.".to_string()
+                    "BatteryHub 已卸载。你的设置和电量历史已保留，供以后安装使用。".to_string()
                 }
             });
             post(h, Work::Finished(r));
@@ -204,7 +204,7 @@ impl Ui {
 
     fn begin_work(&mut self) {
         self.busy = true;
-        self.step = "Starting".into();
+        self.step = "正在启动".into();
         self.lines.clear();
         self.bar = Tween::new(0.0);
         self.started = std::time::Instant::now();
@@ -412,50 +412,50 @@ impl Ui {
         let nf = self.fonts.get(self.px(13.0), 400, Face::Text);
         let ip = self.px(16.0);
         let (status, status_c) = match &plan {
-            Plan::Install => ("Not installed yet".to_string(), t.dim),
-            Plan::Update(v) => (format!("v{v} installed - an update to {} is ready", self.version_label()), t.green),
-            Plan::Reinstall => (format!("{} installed - this is the same version", self.version_label()), t.text),
-            Plan::Downgrade(v) => (format!("v{v} installed - newer than this setup ({})", self.version_label()), t.orange),
+            Plan::Install => ("尚未安装".to_string(), t.dim),
+            Plan::Update(v) => (format!("已安装 v{v} - 可更新到 {}", self.version_label()), t.green),
+            Plan::Reinstall => (format!("已安装 {} - 与此版本相同", self.version_label()), t.text),
+            Plan::Downgrade(v) => (format!("已安装 v{v} - 比本安装程序新（{}）", self.version_label()), t.orange),
         };
-        b.text("On this PC", lf, t.faint, rect(p + ip, y + ip - self.px(2.0), w, self.px(18.0)), DT_LEFT | DT_SINGLELINE);
+        b.text("本机", lf, t.faint, rect(p + ip, y + ip - self.px(2.0), w, self.px(18.0)), DT_LEFT | DT_SINGLELINE);
         b.text(&status, vf, status_c, rect(p + ip, y + ip + self.px(16.0), w - 2 * p - 2 * ip, self.px(22.0)), DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS);
-        let mut where_ = if st.installed { st.dir.display().to_string() } else { format!("Installs to {}", self.ed.default_dir().display()) };
+        let mut where_ = if st.installed { st.dir.display().to_string() } else { format!("安装到 {}", self.ed.default_dir().display()) };
         if st.running {
-            where_ += "  ·  running now (it is restarted)";
+            where_ += "  ·  正在运行（会重新启动）";
         }
         b.text(&where_, nf, t.dim, rect(p + ip, y + ip + self.px(40.0), w - 2 * p - 2 * ip, self.px(20.0)), DT_LEFT | DT_SINGLELINE | DT_PATH_ELLIPSIS);
         if let Some(o) = &st.original {
-            let note = format!("The original BatteryHub ({}) is separate and stays as it is.", o.display());
+            let note = format!("原版 BatteryHub（{}）与本程序相互独立，保持原样。", o.display());
             b.text(&note, lf, t.faint, rect(p + ip, y + ip + self.px(60.0), w - 2 * p - 2 * ip, self.px(18.0)), DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS);
         }
         y += card_h + self.px(20.0);
         // Options.
         let cw = w - 2 * p - self.px(40.0);
         let c = self.choices;
-        self.checkbox(b, p + self.px(4.0), y, cw, "Desktop shortcut (a Start menu shortcut is always made)", c.desktop, ID_DESKTOP);
+        self.checkbox(b, p + self.px(4.0), y, cw, "桌面快捷方式（始终会创建开始菜单快捷方式）", c.desktop, ID_DESKTOP);
         y += self.px(32.0);
-        self.checkbox(b, p + self.px(4.0), y, cw, "Start automatically when I sign in to Windows", c.autostart, ID_AUTOSTART);
+        self.checkbox(b, p + self.px(4.0), y, cw, "登录 Windows 时自动启动", c.autostart, ID_AUTOSTART);
         y += self.px(32.0);
-        self.checkbox(b, p + self.px(4.0), y, cw, "Start BatteryHub when setup is done", c.launch, ID_LAUNCH);
+        self.checkbox(b, p + self.px(4.0), y, cw, "安装完成后启动 BatteryHub", c.launch, ID_LAUNCH);
         let _ = y;
         let _ = h;
         // Footer: other versions and uninstall on the left, the main action on the right.
         let fy = self.footer_y(h) + dy;
         let mut x = p - self.px(8.0);
-        x += self.link(b, x, fy, "Other versions...", ID_VERSIONS);
+        x += self.link(b, x, fy, "其他版本...", ID_VERSIONS);
         if st.installed {
-            self.link(b, x, fy, "Uninstall...", ID_UNINSTALL);
+            self.link(b, x, fy, "卸载...", ID_UNINSTALL);
         }
         let label = match &plan {
-            Plan::Install => "Install".to_string(),
-            Plan::Update(_) => format!("Update to {}", self.version_label()),
-            Plan::Reinstall => "Reinstall".to_string(),
-            Plan::Downgrade(_) => format!("Go back to {}", self.version_label()),
+            Plan::Install => "安装".to_string(),
+            Plan::Update(_) => format!("更新到 {}", self.version_label()),
+            Plan::Reinstall => "重新安装".to_string(),
+            Plan::Downgrade(_) => format!("回退到 {}", self.version_label()),
         };
         let bw = self.px(150.0).max(b.measure(&label, self.fonts.get(self.px(14.0), 400, Face::Text)).cx + self.px(32.0));
         let close_w = self.px(96.0);
         self.btn(b, rect(w - p - bw, fy, bw, self.px(32.0)), &label, true, ID_PRIMARY, true);
-        self.btn(b, rect(w - p - bw - self.px(8.0) - close_w, fy, close_w, self.px(32.0)), "Close", false, ID_CLOSE, true);
+        self.btn(b, rect(w - p - bw - self.px(8.0) - close_w, fy, close_w, self.px(32.0)), "关闭", false, ID_CLOSE, true);
     }
 
     fn versions(&mut self, b: &mut Buffer, w: i32, h: i32, dy: i32) {
@@ -468,8 +468,8 @@ impl Ui {
             self.px(28.0) + dy,
             '\u{E81C}',
             t.accent,
-            "Other versions",
-            "Install any release, also an older one. Settings and battery history are kept.",
+            "其他版本",
+            "可以安装任意版本，包括更旧的版本。设置和电量历史会保留。",
         );
         let list_h = self.footer_y(h) - y - self.px(16.0);
         b.card(p as f32, y as f32, (w - 2 * p) as f32, list_h as f32, 8.0 * self.s, t.card, t.stroke);
@@ -487,7 +487,7 @@ impl Ui {
             }
             Some(Err(e)) => {
                 b.text(
-                    &format!("Could not load the list from GitHub:\n{e}"),
+                    &format!("无法从 GitHub 加载列表：\n{e}"),
                     nf,
                     t.red,
                     rect(p + self.px(16.0), y + self.px(16.0), w - 2 * p - self.px(32.0), list_h - self.px(32.0)),
@@ -512,15 +512,15 @@ impl Ui {
                     b.text(&label, f, t.text, rect(rr.left + self.px(12.0), yy, self.px(90.0), row_h), DT_LEFT | DT_VCENTER | DT_SINGLELINE);
                     let cmp = installed.as_deref().map(|v| inst::version_cmp(&r.version, v));
                     let (tag, c) = match (i, cmp) {
-                        (_, Some(std::cmp::Ordering::Equal)) => ("installed now", t.green),
-                        (0, _) => ("latest", t.accent),
-                        (_, Some(std::cmp::Ordering::Less)) => ("older - goes back to this version", t.dim),
-                        (_, Some(std::cmp::Ordering::Greater)) => ("newer", t.dim),
+                        (_, Some(std::cmp::Ordering::Equal)) => ("当前已安装", t.green),
+                        (0, _) => ("最新", t.accent),
+                        (_, Some(std::cmp::Ordering::Less)) => ("较旧 - 会回退到此版本", t.dim),
+                        (_, Some(std::cmp::Ordering::Greater)) => ("较新", t.dim),
                         _ => ("", t.dim),
                     };
-                    let tag = if r.prerelease { format!("{tag} (pre-release)") } else { tag.to_string() };
+                    let tag = if r.prerelease { format!("{tag}（预发布）") } else { tag.to_string() };
                     b.text(&tag, nf, c, rect(rr.left + self.px(100.0), yy, self.px(300.0), row_h), DT_LEFT | DT_VCENTER | DT_SINGLELINE);
-                    b.text("Install", nf, t.accent, rect(rr.right - self.px(90.0), yy, self.px(78.0), row_h), DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
+                    b.text("安装", nf, t.accent, rect(rr.right - self.px(90.0), yy, self.px(78.0), row_h), DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
                     self.hits.add(rr, id);
                     yy += row_h;
                 }
@@ -532,12 +532,12 @@ impl Ui {
                     b.rrect((w - p - self.px(8.0)) as f32, top, 3.0 * self.s, thumb, 1.5 * self.s, t.faint, 0.8);
                 }
                 if list.is_empty() {
-                    b.text("No releases found.", nf, t.dim, rect(p + self.px(16.0), y + self.px(16.0), w, self.px(20.0)), DT_LEFT | DT_SINGLELINE);
+                    b.text("没有找到发布版本。", nf, t.dim, rect(p + self.px(16.0), y + self.px(16.0), w, self.px(20.0)), DT_LEFT | DT_SINGLELINE);
                 }
             }
         }
         let fy = self.footer_y(h) + dy;
-        self.btn(b, rect(w - p - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "Back", false, ID_BACK, true);
+        self.btn(b, rect(w - p - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "返回", false, ID_BACK, true);
     }
 
     fn started_anim(&self) {
@@ -555,35 +555,35 @@ impl Ui {
             self.px(28.0) + dy,
             '\u{E74D}',
             t.red,
-            "Uninstall BatteryHub?",
+            "卸载 BatteryHub？",
             &format!("{} {}", self.ed.name, self.st.version.as_deref().map(inst::label_of).unwrap_or_default()),
         );
         let nf = self.fonts.get(self.px(14.0), 400, Face::Text);
         let text =
-            "The program, its shortcuts, its autostart entry and its entry in Settings > Apps are removed. If BatteryHub is running, it is closed first.";
+            "将删除程序、快捷方式、开机启动项，以及“设置 > 应用”中的条目。如果 BatteryHub 正在运行，会先关闭它。";
         b.text(text, nf, t.dim, rect(p, y, w - 2 * p, self.px(44.0)), DT_LEFT | DT_WORDBREAK);
         y += self.px(60.0);
         let purge = self.purge;
-        self.checkbox(b, p + self.px(4.0), y, w - 2 * p - self.px(40.0), "Also remove my settings and battery history", purge, ID_PURGE);
+        self.checkbox(b, p + self.px(4.0), y, w - 2 * p - self.px(40.0), "同时删除我的设置和电量历史", purge, ID_PURGE);
         y += self.px(30.0);
         let lf = self.fonts.get(self.px(12.0), 400, Face::Text);
         let note = if purge {
-            "Warning levels, device names, options and the 7-day history are deleted for good."
+            "警告阈值、设备名称、各项选项和 7 天历史都会被永久删除。"
         } else {
-            "They stay, so a later install picks them up again (a few kilobytes)."
+            "会保留下来，以后重新安装时会继续使用（只有几 KB）。"
         };
         b.text(note, lf, if purge { t.orange } else { t.faint }, rect(p + self.px(34.0), y, w - 2 * p - self.px(40.0), self.px(20.0)), DT_LEFT | DT_SINGLELINE);
         let fy = self.footer_y(h) + dy;
         let bw = self.px(120.0);
-        self.btn(b, rect(w - p - bw, fy, bw, self.px(32.0)), "Uninstall", true, ID_CONFIRM_UNINSTALL, true);
-        self.btn(b, rect(w - p - bw - self.px(8.0) - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "Cancel", false, ID_BACK, true);
+        self.btn(b, rect(w - p - bw, fy, bw, self.px(32.0)), "卸载", true, ID_CONFIRM_UNINSTALL, true);
+        self.btn(b, rect(w - p - bw - self.px(8.0) - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "取消", false, ID_BACK, true);
     }
 
     fn progress(&mut self, b: &mut Buffer, w: i32, h: i32, dy: i32) {
         let t = self.theme;
         let p = self.px(32.0);
         let title = self.title.clone();
-        let mut y = self.header(b, w, self.px(28.0) + dy, '\u{E896}', t.accent, &title, "Please wait - this takes a few seconds.");
+        let mut y = self.header(b, w, self.px(28.0) + dy, '\u{E896}', t.accent, &title, "请稍候 - 需要几秒时间。");
         y += self.px(16.0);
         // The bar: track, the done part, and a soft light moving along it while work runs.
         let (bx, bw, bh) = (p as f32, (w - 2 * p) as f32, 4.0 * self.s);
@@ -606,7 +606,7 @@ impl Ui {
         y += self.px(36.0);
         self.details_box(b, p, y, w, self.footer_y(h) - self.px(12.0));
         let fy = self.footer_y(h) + dy;
-        let label = if self.details { "Hide details" } else { "Show details" };
+        let label = if self.details { "隐藏详情" } else { "显示详情" };
         self.link(b, p - self.px(8.0), fy, label, ID_DETAILS);
     }
 
@@ -637,7 +637,7 @@ impl Ui {
     fn done(&mut self, b: &mut Buffer, w: i32, h: i32, dy: i32) {
         let t = self.theme;
         let p = self.px(32.0);
-        let (glyph, c, title) = if self.ok { ('\u{E73E}', t.green, "All done") } else { ('\u{E711}', t.red, "Something went wrong") };
+        let (glyph, c, title) = if self.ok { ('\u{E73E}', t.green, "全部完成") } else { ('\u{E711}', t.red, "出错了") };
         // The result icon grows in with a slight overshoot.
         let k = self.check.value();
         let pop = if k < 1.0 { 1.0 + 0.12 * (k * std::f32::consts::PI).sin() } else { 1.0 };
@@ -662,14 +662,14 @@ impl Ui {
         self.details_box(b, p, self.px(270.0), w, self.footer_y(h) - self.px(12.0));
         let fy = self.footer_y(h) + dy;
         let mut x = p - self.px(8.0);
-        x += self.link(b, x, fy, if self.details { "Hide details" } else { "Show details" }, ID_DETAILS);
-        self.link(b, x, fy, "Open log file", ID_LOG);
+        x += self.link(b, x, fy, if self.details { "隐藏详情" } else { "显示详情" }, ID_DETAILS);
+        self.link(b, x, fy, "打开日志文件", ID_LOG);
         let bw = self.px(150.0);
         if self.ok && !self.uninstalled && self.st.installed {
-            self.btn(b, rect(w - p - bw, fy, bw, self.px(32.0)), "Open BatteryHub", true, ID_OPEN, true);
-            self.btn(b, rect(w - p - bw - self.px(8.0) - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "Close", false, ID_CLOSE, true);
+            self.btn(b, rect(w - p - bw, fy, bw, self.px(32.0)), "打开 BatteryHub", true, ID_OPEN, true);
+            self.btn(b, rect(w - p - bw - self.px(8.0) - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "关闭", false, ID_CLOSE, true);
         } else {
-            self.btn(b, rect(w - p - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "Close", !self.ok || self.uninstalled, ID_CLOSE, true);
+            self.btn(b, rect(w - p - self.px(96.0), fy, self.px(96.0), self.px(32.0)), "关闭", !self.ok || self.uninstalled, ID_CLOSE, true);
         }
     }
 }
@@ -819,7 +819,7 @@ pub fn run(ed: Edition, payload: &'static [u8], o: &Opts) -> i32 {
         let (w, h) = (wr.right - wr.left, wr.bottom - wr.top);
         let work = mi.rcWork;
         let (x, y) = (work.left + (work.right - work.left - w) / 2, work.top + (work.bottom - work.top - h) / 2);
-        let title = HSTRING::from(format!("{} {} - Setup", ed.name, inst::version_label()));
+        let title = HSTRING::from(format!("{} {} - 安装程序", ed.name, inst::version_label()));
         let Ok(hwnd) = CreateWindowExW(WINDOW_EX_STYLE::default(), CLASS, &title, style, x, y, w, h, None, None, Some(hinst.into()), None) else {
             return 1;
         };

@@ -62,7 +62,7 @@ pub const TASKBAR: Edition = Edition {
     settings_key: r"Software\BatteryHub\Taskbar",
     window_class: "BatteryHub.Taskbar.Main",
     run_value: Some("BatteryHub Taskbar"),
-    description: "Battery levels of your wireless devices, right on the taskbar",
+    description: "无线设备的电量，直接显示在任务栏上",
 };
 
 impl Edition {
@@ -318,7 +318,7 @@ pub fn fmt_bytes(n: u64) -> String {
         }
         out.push(c);
     }
-    out + " bytes"
+    out + " 字节"
 }
 
 /// Full path of a process's program file, if it can be read.
@@ -387,7 +387,7 @@ const WINDOW_CLASSES: [&str; 3] = ["BatteryHub.Dashboard", "BatteryHub.Rename", 
 pub fn stop_running(ed: &Edition, exe: &std::path::Path, log: &Log) -> bool {
     use windows::Win32::Foundation::{LPARAM, WPARAM};
     use windows::Win32::UI::WindowsAndMessaging::{FindWindowExW, GetWindowThreadProcessId, PostMessageW, WM_CLOSE};
-    log.info(format!("Looking for running copies of {}", exe.display()));
+    log.info(format!("正在查找正在运行的 {}", exe.display()));
     let ours = |h: windows::Win32::Foundation::HWND| {
         let mut pid = 0u32;
         unsafe { GetWindowThreadProcessId(h, Some(&mut pid)) };
@@ -407,10 +407,10 @@ pub fn stop_running(ed: &Edition, exe: &std::path::Path, log: &Log) -> bool {
                 if ours(h) {
                     was_running |= class == ed.window_class;
                     asked = true;
-                    log.detail(format!("asking {class} (window {:?}) to close", h.0));
+                    log.detail(format!("正在请求 {class}（窗口 {:?}）关闭", h.0));
                     let _ = PostMessageW(Some(h), WM_CLOSE, WPARAM(0), LPARAM(0));
                 } else {
-                    log.detail(format!("skipping a {class} window of another program file"));
+                    log.detail(format!("跳过另一个程序文件的 {class} 窗口"));
                 }
             }
         }
@@ -418,21 +418,21 @@ pub fn stop_running(ed: &Edition, exe: &std::path::Path, log: &Log) -> bool {
     for i in 0..30 {
         if processes_running(exe).is_empty() {
             if asked {
-                log.ok(format!("{} exited after {} ms.", ed.name, i * 100));
+                log.ok(format!("{} 已在 {} 毫秒后退出。", ed.name, i * 100));
                 std::thread::sleep(std::time::Duration::from_millis(300)); // let Windows release the file
             } else {
-                log.detail("not running");
+                log.detail("未运行");
             }
             return was_running;
         }
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
     for pid in processes_running(exe) {
-        log.warn(format!("Process {pid} ({}) did not exit in time, ending it...", exe.display()));
+        log.warn(format!("进程 {pid}（{}）未按时退出，正在结束它…", exe.display()));
         if terminate(pid) {
-            log.ok(format!("Process {pid} ended."));
+            log.ok(format!("进程 {pid} 已结束。"));
         } else {
-            log.error(format!("Could not end process {pid}."));
+            log.error(format!("无法结束进程 {pid}。"));
         }
         was_running = true;
     }
@@ -450,42 +450,42 @@ pub fn install_file(path: &std::path::Path, data: &[u8], log: &Log, progress: &d
     let name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
     let tmp = dir.join(format!(".{name}.{}.new", std::process::id()));
     let expected = crate::update::sha256_hex(data)?;
-    log.info(format!("Writing {} ({}) via {}", path.display(), fmt_bytes(data.len() as u64), tmp.display()));
+    log.info(format!("正在写入 {}（{}），经由 {}", path.display(), fmt_bytes(data.len() as u64), tmp.display()));
     log.detail(format!("SHA-256 {expected}"));
     let result = (|| -> Result<(), String> {
-        let mut f = std::fs::File::create(&tmp).map_err(|e| format!("cannot create {}: {e}", tmp.display()))?;
+        let mut f = std::fs::File::create(&tmp).map_err(|e| format!("无法创建 {}：{e}", tmp.display()))?;
         const CHUNK: usize = 64 * 1024;
         for (i, chunk) in data.chunks(CHUNK).enumerate() {
-            f.write_all(chunk).map_err(|e| format!("write error: {e}"))?;
+            f.write_all(chunk).map_err(|e| format!("写入错误：{e}"))?;
             progress(((i * CHUNK + chunk.len()) as f32 / data.len().max(1) as f32).min(1.0));
         }
-        f.sync_all().map_err(|e| format!("cannot flush to disk: {e}"))?;
+        f.sync_all().map_err(|e| format!("无法写入磁盘：{e}"))?;
         drop(f);
-        let back = std::fs::read(&tmp).map_err(|e| format!("cannot read back: {e}"))?;
+        let back = std::fs::read(&tmp).map_err(|e| format!("无法读回：{e}"))?;
         let got = crate::update::sha256_hex(&back)?;
         if back.len() != data.len() || got != expected {
-            return Err(format!("the written file is not complete or not correct (SHA-256 {got})"));
+            return Err(format!("写入的文件不完整或不正确（SHA-256 {got}）"));
         }
-        log.ok("Written and verified.");
+        log.ok("已写入并校验。");
         let mut last = String::new();
         for attempt in 1..=20 {
             match crate::util::replace_file(&tmp, path) {
                 Ok(()) => return Ok(()),
                 Err(e) => {
                     last = e.to_string();
-                    log.warn(format!("{} is in use ({e}), retrying ({attempt}/20)...", path.display()));
+                    log.warn(format!("{} 正在使用中（{e}），正在重试（{attempt}/20）…", path.display()));
                     std::thread::sleep(std::time::Duration::from_millis(250));
                 }
             }
         }
-        Err(format!("cannot replace {}: {last}", path.display()))
+        Err(format!("无法替换 {}：{last}", path.display()))
     })();
     match &result {
         Err(e) => {
             let _ = std::fs::remove_file(&tmp);
-            log.error(format!("{e} - {} was left as it was.", path.display()));
+            log.error(format!("{e} - {} 保持原样。", path.display()));
         }
-        Ok(()) => log.ok(format!("Installed {}", path.display())),
+        Ok(()) => log.ok(format!("已安装 {}", path.display())),
     }
     result
 }

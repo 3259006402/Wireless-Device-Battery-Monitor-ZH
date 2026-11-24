@@ -133,7 +133,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: p.key.into(),
             name: p.name.into(),
             kind: DeviceKind::Mouse,
-            via: if p.cable { "USB cable" } else { "2.4 GHz receiver" }.into(),
+            via: if p.cable { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
             hw: Some((vid, pid)),
             grace_sec: 1800,
             ..Default::default()

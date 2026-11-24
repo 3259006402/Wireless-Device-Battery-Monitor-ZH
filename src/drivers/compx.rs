@@ -170,7 +170,7 @@ pub fn poll(ctx: &mut PollContext) {
             key,
             name: prod.name.into(),
             kind: DeviceKind::Mouse,
-            via: if prod.cable { "USB cable" } else { "2.4 GHz receiver" }.into(),
+            via: if prod.cable { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
             percent: level,
             charging,
             millivolts: mv,

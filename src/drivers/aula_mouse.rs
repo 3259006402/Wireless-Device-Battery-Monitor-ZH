@@ -114,7 +114,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: "aula_mouse:320f:22a0".into(),
         name: "AULA wireless mouse".into(),
         kind: DeviceKind::Mouse,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, PID)),
         grace_sec: 1800,
         ..Default::default()

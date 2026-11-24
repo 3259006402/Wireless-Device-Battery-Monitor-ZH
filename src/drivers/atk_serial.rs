@@ -150,7 +150,7 @@ pub fn poll(ctx: &mut PollContext) {
                 key: format!("atk-serial:{}", hex4(m.pid)),
                 name: m.name.into(),
                 kind: DeviceKind::Headset,
-                via: if m.cable { "USB cable".into() } else { "2.4 GHz receiver".into() },
+                via: if m.cable { "USB 线缆".into() } else { "2.4 GHz 接收器".into() },
                 hw: Some((VID, m.pid)),
                 grace_sec: 60,
                 ..Default::default()

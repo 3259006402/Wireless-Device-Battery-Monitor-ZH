@@ -75,7 +75,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("sonix:{}:{}", hex4(vid), hex4(pid)),
             name: name(c),
             kind: DeviceKind::Keyboard,
-            via: "2.4 GHz receiver".into(),
+            via: "2.4 GHz 接收器".into(),
             hw: Some((vid, pid)),
             grace_sec: 1800,
             ..Default::default()

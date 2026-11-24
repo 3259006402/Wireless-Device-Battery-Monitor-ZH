@@ -82,7 +82,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: "atk_mercury:107c".into(),
         name: "ATK Mercury I / M1".into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, PID)),
         grace_sec: 600,
         ..Default::default()

@@ -61,7 +61,7 @@ pub fn check() -> Check {
 
 fn latest_release() -> Result<Release, String> {
     let body = http_get(&format!("https://api.github.com/repos/{REPO}/releases/latest"))?;
-    parse_release(&String::from_utf8_lossy(&body)).ok_or_else(|| "unexpected answer from GitHub".into())
+    parse_release(&String::from_utf8_lossy(&body)).ok_or_else(|| "GitHub 返回了意料之外的响应".into())
 }
 
 /// Every release that has a setup, newest first (for installing a chosen, also older, version).
@@ -203,23 +203,23 @@ impl Verified {
 /// new folder under %TEMP%.
 pub fn download(r: &Release) -> Result<Verified, String> {
     if !is_release_asset(&r.setup_url) {
-        return Err("the release's setup is not on this project's GitHub release page".into());
+        return Err("该发布的安装程序不在本项目的 GitHub 发布页面上".into());
     }
-    let sums_url = r.sums_url.as_ref().ok_or("the release has no SHA256SUMS.txt, so the setup cannot be verified - it was not started")?;
+    let sums_url = r.sums_url.as_ref().ok_or("该发布没有 SHA256SUMS.txt，无法校验安装程序 - 未启动")?;
     let sums_raw = http_get(sums_url)?;
     if let Some(key) = release_key() {
-        let sig_url = r.sig_url.as_ref().ok_or("the release is not signed (no SHA256SUMS.txt.sig) - the setup was not started")?;
+        let sig_url = r.sig_url.as_ref().ok_or("该发布未签名（缺少 SHA256SUMS.txt.sig）- 未启动安装程序")?;
         let sig = http_get(sig_url)?;
-        if !verify_signature(&sums_raw, &decode_sig(&sig).ok_or("the release signature is damaged")?, &key) {
-            return Err("the release signature does not match this program's release key - the setup was not started".into());
+        if !verify_signature(&sums_raw, &decode_sig(&sig).ok_or("该发布的签名已损坏")?, &key) {
+            return Err("该发布的签名与本程序的发布密钥不匹配 - 未启动安装程序".into());
         }
     }
     let sums = String::from_utf8_lossy(&sums_raw).to_string();
-    let expected = expected_hash(&sums, &r.setup_name).ok_or("the release's SHA256SUMS.txt does not list the setup")?;
+    let expected = expected_hash(&sums, &r.setup_name).ok_or("该发布的 SHA256SUMS.txt 中没有列出安装程序")?;
     let data = http_get(&r.setup_url)?;
     let actual = sha256_hex(&data)?;
     if actual != expected {
-        return Err(format!("checksum mismatch (expected {expected}, got {actual}) - the setup was not started"));
+        return Err(format!("校验和不匹配（期望 {expected}，实际 {actual}）- 未启动安装程序"));
     }
     // A fresh folder per download (no fixed, guessable path).
     let dir = std::env::temp_dir().join(format!("BatteryHub-Update-{}-{}", std::process::id(), crate::history::now_secs()));
@@ -230,7 +230,7 @@ pub fn download(r: &Release) -> Result<Verified, String> {
     let lock = open_locked(&path).map_err(|e| e.to_string())?;
     let on_disk = std::fs::read(&path).map_err(|e| e.to_string())?;
     if sha256_hex(&on_disk)? != expected {
-        return Err("the saved setup changed after it was verified - it was not started".into());
+        return Err("已保存的安装程序在校验之后被改动 - 未启动".into());
     }
     Ok(Verified { path, _lock: lock })
 }
@@ -245,7 +245,7 @@ pub fn sha256(data: &[u8]) -> Result<[u8; 32], String> {
     let mut hash = [0u8; 32];
     let st = unsafe { BCryptHash(BCRYPT_SHA256_ALG_HANDLE, None, data, &mut hash) };
     if st.is_err() {
-        return Err("SHA-256 failed".into());
+        return Err("SHA-256 校验失败".into());
     }
     Ok(hash)
 }
@@ -317,10 +317,10 @@ pub fn trusted_host(host: &str) -> bool {
 /// HTTPS GET. Redirects are followed by WinHTTP but never to plain HTTP, and the final address
 /// must be on one of GitHub's hosts. Errors on non-200 answers and on bodies over MAX_BODY.
 pub fn http_get(url: &str) -> Result<Vec<u8>, String> {
-    let rest = url.strip_prefix("https://").ok_or("only https URLs are used")?;
+    let rest = url.strip_prefix("https://").ok_or("只使用 https 地址")?;
     let (host, path) = rest.split_once('/').map(|(h, p)| (h, format!("/{p}"))).unwrap_or((rest, "/".into()));
     if !trusted_host(host) {
-        return Err(format!("{host} is not one of GitHub's hosts"));
+        return Err(format!("{host} 不是 GitHub 的主机之一"));
     }
     unsafe {
         let session = Handle(WinHttpOpen(
@@ -331,7 +331,7 @@ pub fn http_get(url: &str) -> Result<Vec<u8>, String> {
             0,
         ));
         if session.0.is_null() {
-            return Err("WinHTTP is not available".into());
+            return Err("WinHTTP 不可用".into());
         }
         let _ = WinHttpSetTimeouts(session.0, 10_000, 10_000, 15_000, 30_000);
         // Never follow a redirect from HTTPS to HTTP (also WinHTTP's default; set explicitly).
@@ -339,7 +339,7 @@ pub fn http_get(url: &str) -> Result<Vec<u8>, String> {
         let _ = WinHttpSetOption(Some(session.0), WINHTTP_OPTION_REDIRECT_POLICY, Some(&policy.to_le_bytes()));
         let connect = Handle(WinHttpConnect(session.0, &HSTRING::from(host), 443, 0));
         if connect.0.is_null() {
-            return Err(format!("cannot reach {host}"));
+            return Err(format!("无法访问 {host}"));
         }
         let request = Handle(WinHttpOpenRequest(
             connect.0,
@@ -351,12 +351,12 @@ pub fn http_get(url: &str) -> Result<Vec<u8>, String> {
             WINHTTP_FLAG_SECURE,
         ));
         if request.0.is_null() {
-            return Err("cannot create the request".into());
+            return Err("无法创建请求".into());
         }
         let headers: Vec<u16> = "Accept: application/vnd.github+json\r\n".encode_utf16().collect();
         let _ = WinHttpAddRequestHeaders(request.0, &headers, WINHTTP_ADDREQ_FLAG_ADD);
-        WinHttpSendRequest(request.0, None, None, 0, 0, 0).map_err(|e| format!("no connection ({})", e.message()))?;
-        WinHttpReceiveResponse(request.0, std::ptr::null_mut()).map_err(|e| format!("no answer ({})", e.message()))?;
+        WinHttpSendRequest(request.0, None, None, 0, 0, 0).map_err(|e| format!("无法连接（{}）", e.message()))?;
+        WinHttpReceiveResponse(request.0, std::ptr::null_mut()).map_err(|e| format!("没有响应（{}）", e.message()))?;
         // Where the redirects ended.
         let mut buf = vec![0u16; 2048];
         let mut len = (buf.len() * 2) as u32;
@@ -365,7 +365,7 @@ pub fn http_get(url: &str) -> Result<Vec<u8>, String> {
             let final_url = final_url.trim_end_matches('\0');
             let ok = final_url.strip_prefix("https://").and_then(|r| r.split(['/', ':']).next()).is_some_and(trusted_host);
             if !ok {
-                return Err(format!("the download was redirected to an unexpected address ({final_url})"));
+                return Err(format!("下载被重定向到意料之外的地址（{final_url}）"));
             }
         }
         let mut status = 0u32;
@@ -380,7 +380,7 @@ pub fn http_get(url: &str) -> Result<Vec<u8>, String> {
             &mut index,
         );
         if status != 200 {
-            return Err(if status == 404 { "no release found".into() } else { format!("HTTP {status}") });
+            return Err(if status == 404 { "没有找到发布".into() } else { format!("HTTP {status}") });
         }
         let mut body = Vec::new();
         let mut buf = vec![0u8; 64 * 1024];
@@ -391,7 +391,7 @@ pub fn http_get(url: &str) -> Result<Vec<u8>, String> {
                 break;
             }
             if body.len() + read as usize > MAX_BODY {
-                return Err("the download is far larger than expected - stopped".into());
+                return Err("下载内容远超预期 - 已停止".into());
             }
             body.extend_from_slice(&buf[..read as usize]);
         }

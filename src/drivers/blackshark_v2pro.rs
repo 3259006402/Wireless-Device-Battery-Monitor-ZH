@@ -129,7 +129,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: format!("razer:{}", hex4(DONGLE)),
         name: "Razer BlackShark V2 Pro".into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz dongle".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, DONGLE)),
         grace_sec: 60,
         ..Default::default()

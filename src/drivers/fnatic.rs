@@ -100,7 +100,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: "fnatic:bolt".into(),
         name: "FNATIC BOLT".into(),
         kind: DeviceKind::Mouse,
-        via: if cable_present { "USB cable" } else { "2.4 GHz receiver" }.into(),
+        via: if cable_present { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
         hw: Some((VID, selected_pid)),
         grace_sec: 60,
         ..Default::default()

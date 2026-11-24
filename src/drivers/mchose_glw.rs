@@ -114,7 +114,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: "mchose:3837:3033".into(),
         name: display_name(&hid::product_string(first)),
         kind: DeviceKind::Keyboard,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, PID)),
         grace_sec: 1800,
         ..Default::default()

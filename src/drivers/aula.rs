@@ -175,7 +175,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("aula:{}:{}", hex4(vid), hex4(pid)),
             name: name(c, vid),
             kind: DeviceKind::Keyboard,
-            via: "2.4 GHz receiver".into(),
+            via: "2.4 GHz 接收器".into(),
             percent: level,
             charging,
             hw: Some((vid, pid)),

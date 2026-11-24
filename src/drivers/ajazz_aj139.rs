@@ -66,7 +66,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("ajazz139:{}:{}", hex4(vid), hex4(PID)),
             name: "AJAZZ wireless mouse".into(),
             kind: DeviceKind::Mouse,
-            via: if cable { "USB cable" } else { "2.4 GHz receiver" }.into(),
+            via: if cable { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
             hw: Some((vid, PID)),
             grace_sec: 1800,
             ..Default::default()

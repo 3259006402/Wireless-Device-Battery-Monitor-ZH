@@ -9,5 +9,5 @@ fn main() {
     assert!(p.exists(), "missing payload file {}", p.display());
     println!("cargo:rerun-if-changed={}", p.display());
     let res = std::path::Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap()).join("..").join("res");
-    resources::embed(&res.canonicalize().unwrap(), "BatteryHub Setup");
+    resources::embed(&res.canonicalize().unwrap(), "BatteryHub 安装程序");
 }

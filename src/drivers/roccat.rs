@@ -73,7 +73,7 @@ pub fn decode(pid: u16, r: &[u8]) -> Option<DeviceStatus> {
         key: format!("roccat:{}", hex4(pid)),
         name: "ROCCAT Syn Max Air".into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         millivolts: mv,
         charging,
         grace_sec: 60,
@@ -125,7 +125,7 @@ pub fn poll(ctx: &mut PollContext) {
                         key: format!("roccat:{}", hex4(pid)),
                         name: "ROCCAT Syn Max Air".into(),
                         kind: DeviceKind::Headset,
-                        via: "2.4 GHz receiver".into(),
+                        via: "2.4 GHz 接收器".into(),
                         connected: false,
                         hw: Some((vid, pid)),
                         ..Default::default()

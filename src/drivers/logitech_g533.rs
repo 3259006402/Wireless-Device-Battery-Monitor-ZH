@@ -84,7 +84,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: "logi-g533".into(),
         name: "Logitech G533".into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz dongle".into(),
+        via: "2.4 GHz 接收器".into(),
         vid: VID,
         hw: Some((VID, PID)),
         grace_sec: 60,

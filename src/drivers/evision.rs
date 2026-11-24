@@ -136,7 +136,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: "evision:5088".into(), // one entry for the keyboard on either connection
             name,
             kind: DeviceKind::Keyboard,
-            via: if cable { "USB cable" } else { "2.4 GHz receiver" }.into(),
+            via: if cable { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
             hw: Some((VID, pid)),
             grace_sec: 1800,
             ..Default::default()

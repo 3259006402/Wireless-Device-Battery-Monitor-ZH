@@ -76,7 +76,7 @@ fn base(pid: u16, model: Option<u8>) -> DeviceStatus {
         key: format!("attackshark:{}", hex4(pid)),
         name: model_name(pid, model.unwrap_or(0)).into(),
         kind: DeviceKind::Mouse,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, pid)),
         grace_sec: 60,
         ..Default::default()

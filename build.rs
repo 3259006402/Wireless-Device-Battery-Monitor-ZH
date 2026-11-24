@@ -19,5 +19,5 @@ fn main() {
         println!("cargo:rustc-env=BH_RELEASE_KEY={hex}");
     }
     let dir = root.join("res");
-    resources::embed(&dir, "BatteryHub - battery levels of wireless devices");
+    resources::embed(&dir, "BatteryHub - 无线设备电量监视器");
 }

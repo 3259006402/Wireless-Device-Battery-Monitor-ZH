@@ -130,7 +130,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("zowie:{}", hex4(pid)),
             name: if pid == U2_RECEIVER { "ZOWIE U2".into() } else { "ZOWIE DW mouse".into() },
             kind: DeviceKind::Mouse,
-            via: "2.4 GHz receiver".into(),
+            via: "2.4 GHz 接收器".into(),
             hw: Some((VID, pid)),
             grace_sec: 1800,
             ..Default::default()

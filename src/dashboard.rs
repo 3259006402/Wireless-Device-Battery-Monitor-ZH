@@ -35,8 +35,8 @@ const KEY_PROP: PCWSTR = w!("BatteryHub.DeviceKey");
 const SETTINGS_KEY: &str = crate::install::TASKBAR.settings_key;
 const EDITION: &str = crate::install::TASKBAR.short;
 
-const TABS: [&str; 3] = ["Overview", "History", "Statistics"];
-const RANGES: [(&str, u64); 3] = [("24 hours", 24 * 3600), ("3 days", 3 * 24 * 3600), ("7 days", 7 * 24 * 3600)];
+const TABS: [&str; 3] = ["概览", "历史", "统计"];
+const RANGES: [(&str, u64); 3] = [("24 小时", 24 * 3600), ("3 天", 3 * 24 * 3600), ("7 天", 7 * 24 * 3600)];
 const ID_TAB: u32 = 1; // + tab
 const ID_RANGE: u32 = 10; // + range
 const ID_RENAME: u32 = 20;
@@ -205,7 +205,7 @@ pub fn local_midnight(t: u64) -> u64 {
     t - (l.hour as u64 * 3600 + l.minute as u64 * 60 + l.second as u64)
 }
 
-const DAYS: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAYS: [&str; 7] = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
 /// "14:02" today, "Tue 14:02" within a week, else "Nov 17 14:02".
 pub fn fmt_when(t: u64, now: u64) -> String {
@@ -215,7 +215,7 @@ pub fn fmt_when(t: u64, now: u64) -> String {
     } else if now.saturating_sub(t) < 6 * 86_400 {
         format!("{} {:02}:{:02}", DAYS[l.weekday as usize % 7], l.hour, l.minute)
     } else {
-        const MONTHS: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const MONTHS: [&str; 12] = ["1 月", "2 月", "3 月", "4 月", "5 月", "6 月", "7 月", "8 月", "9 月", "10 月", "11 月", "12 月"];
         format!("{} {} {:02}:{:02}", MONTHS[(l.month as usize).clamp(1, 12) - 1], l.day, l.hour, l.minute)
     }
 }
@@ -224,13 +224,13 @@ pub fn fmt_when(t: u64, now: u64) -> String {
 pub fn fmt_ago(t: u64, now: u64) -> String {
     let s = now.saturating_sub(t);
     if s < 90 {
-        "just now".into()
+        "刚刚".into()
     } else if s < 3600 {
-        format!("{} min ago", s / 60)
+        format!("{} 分钟前", s / 60)
     } else if s < 48 * 3600 {
-        format!("{} h ago", s / 3600)
+        format!("{} 小时前", s / 3600)
     } else {
-        format!("{} d ago", s / 86_400)
+        format!("{} 天前", s / 86_400)
     }
 }
 
@@ -401,15 +401,15 @@ impl Dash {
         let name_room = right - bar_w.max(chip_w) - self.px(24.0) - x;
         let nf = self.fonts.get(self.px(26.0), 600, Face::Display);
         b.text(&d.name, nf, t.text, rect(x, top - self.px(2.0), name_room, self.px(36.0)), DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS);
-        let mut sub = format!("{} · {}", d.kind.label(), if d.via.is_empty() { "Connected" } else { &d.via });
+        let mut sub = format!("{} · {}", d.kind.label(), if d.via.is_empty() { "已连接" } else { &d.via });
         if !self.reported.is_empty() && self.reported != d.name {
-            sub = format!("{sub} · reports itself as \"{}\"", self.reported);
+            sub = format!("{sub} · 设备自报名称 \"{}\"", self.reported);
         }
         let sf = self.fonts.get(self.px(14.0), 400, Face::Text);
         b.text(&sub, sf, t.dim, rect(x, top + self.px(36.0), name_room, self.px(20.0)), DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS);
         // "Rename" as a small text button.
         let rf = self.fonts.get(self.px(13.0), 400, Face::Text);
-        let label = "Rename...";
+        let label = "重命名...";
         let rw = b.measure(label, rf).cx + self.px(16.0);
         let rr = rect(x - self.px(8.0), top + self.px(60.0), rw, self.px(24.0));
         if self.hover == Some(ID_RENAME) {
@@ -475,7 +475,7 @@ impl Dash {
         );
         let (text, c, f) = match &value {
             Some(v) => (v.as_str(), t.text, self.fonts.get(self.px(24.0), 600, Face::Display)),
-            None => ("Not enough data yet", t.faint, self.fonts.get(self.px(15.0), 400, Face::Text)),
+            None => ("数据还不够", t.faint, self.fonts.get(self.px(15.0), 400, Face::Text)),
         };
         b.text(
             text,
@@ -499,20 +499,20 @@ impl Dash {
         let st = &self.stats;
         let d = &self.status;
         if !d.connected {
-            return (None, "The device is not connected.".into());
+            return (None, "设备未连接。".into());
         }
         if d.is_full() {
-            return (Some("Full".into()), "On power and fully charged.".into());
+            return (Some("已充满".into()), "已接通电源并充满。".into());
         }
         if d.charging {
             return match st.to_full_h {
-                Some(h) => (Some(fmt_hours(h)), "Until full, at the average charge rate.".into()),
-                None => (None, "Charging. The time to full needs a measured charge first.".into()),
+                Some(h) => (Some(fmt_hours(h)), "按平均充电速率计算到充满。".into()),
+                None => (None, "正在充电。要估算充满时间，需要先有一段实测充电数据。".into()),
             };
         }
         match st.remaining_h {
-            Some(h) => (Some(fmt_hours(h)), format!("On battery, at {} (average).", fmt_rate(st.discharge_rate.unwrap_or(0.0)))),
-            None => (None, "Needs about an hour of measured use on battery.".into()),
+            Some(h) => (Some(fmt_hours(h)), format!("使用电池，按平均速率 {} 估算。", fmt_rate(st.discharge_rate.unwrap_or(0.0)))),
+            None => (None, "需要先在电池模式下实测约一小时。".into()),
         }
     }
 
@@ -535,23 +535,23 @@ impl Dash {
         let (n, secs) = self.counted_discharges();
         let st = self.stats.clone();
         let cards: [(char, &str, Option<String>, String); 4] = [
-            ('\u{E916}', "Time left", tl, tl_note),
+            ('\u{E916}', "剩余时间", tl, tl_note),
             (
                 '\u{E83F}',
-                "Battery life",
+                "电池续航",
                 st.battery_life_h.map(fmt_hours),
                 if n > 0 {
-                    format!("Full to empty, from {n} session{} ({}).", if n == 1 { "" } else { "s" }, fmt_hours(secs as f64 / 3600.0))
+                    format!("满电到空：按平均放电速率，{n} 次放电（{}）。", fmt_hours(secs as f64 / 3600.0))
                 } else {
-                    "Full to empty at the average rate.".into()
+                    "按平均速率从满电用到空。".into()
                 },
             ),
-            ('\u{E9D2}', "Discharge rate", st.discharge_rate.map(fmt_rate), "Average drop while on battery.".into()),
+            ('\u{E9D2}', "放电速率", st.discharge_rate.map(fmt_rate), "使用电池时的平均下降速度。".into()),
             (
                 '\u{E945}',
-                "Last charged",
-                if self.status.charging { Some("Now".into()) } else { st.last_charged.map(|t| fmt_ago(t, now)) },
-                st.last_charged.map(|t| format!("Charge ended {}.", fmt_when(t, now))).unwrap_or_else(|| "No charge recorded in the last 7 days.".into()),
+                "上次充电",
+                if self.status.charging { Some("正在充电".into()) } else { st.last_charged.map(|t| fmt_ago(t, now)) },
+                st.last_charged.map(|t| format!("充电结束于 {}。", fmt_when(t, now))).unwrap_or_else(|| "最近 7 天没有充电记录。".into()),
             ),
         ];
         for (i, (icon, title, value, note)) in cards.into_iter().enumerate() {
@@ -562,7 +562,7 @@ impl Dash {
         // Info card at the bottom, the chart fills the rest.
         let info_h = self.px(118.0);
         let chart_h = (h - y - info_h - gap - pad).max(self.px(160.0));
-        self.chart_card(b, rect(pad, y, w - 2 * pad, chart_h), "Last 24 hours", 24 * 3600, false);
+        self.chart_card(b, rect(pad, y, w - 2 * pad, chart_h), "最近 24 小时", 24 * 3600, false);
         self.info_card(b, rect(pad, y + chart_h + gap, w - 2 * pad, info_h));
     }
 
@@ -572,21 +572,21 @@ impl Dash {
         b.card(r.left as f32, r.top as f32, (r.right - r.left) as f32, (r.bottom - r.top) as f32, self.px(8.0) as f32, t.card, t.stroke);
         let p = self.px(16.0);
         let hf = self.fonts.get(self.px(14.0), 600, Face::Text);
-        b.text("Device information", hf, t.text, rect(r.left + p, r.top + p - self.px(2.0), self.px(300.0), self.px(20.0)), DT_LEFT | DT_SINGLELINE);
+        b.text("设备信息", hf, t.text, rect(r.left + p, r.top + p - self.px(2.0), self.px(300.0), self.px(20.0)), DT_LEFT | DT_SINGLELINE);
         let now = history::now_secs();
         let mut rows: Vec<(&str, String)> = vec![
-            ("Type", d.kind.label().into()),
-            ("Connection", if d.via.is_empty() { "-".into() } else { d.via.clone() }),
-            ("Hardware ID", d.hw.map(|(v, p)| format!("{v:04X}:{p:04X}")).unwrap_or_else(|| "-".into())),
-            ("Readings stored", format!("{} (7 days)", self.stats.readings)),
-            ("History since", self.stats.first_reading.map(|t| fmt_when(t, now)).unwrap_or_else(|| "-".into())),
-            ("Device key", d.key.clone()),
+            ("类型", d.kind.label().into()),
+            ("连接方式", if d.via.is_empty() { "-".into() } else { d.via.clone() }),
+            ("硬件 ID", d.hw.map(|(v, p)| format!("{v:04X}:{p:04X}")).unwrap_or_else(|| "-".into())),
+            ("已存读数", format!("{} 条（7 天）", self.stats.readings)),
+            ("历史起始", self.stats.first_reading.map(|t| fmt_when(t, now)).unwrap_or_else(|| "-".into())),
+            ("设备 Key", d.key.clone()),
         ];
         if !d.detail.is_empty() {
-            rows.insert(2, ("Details", d.detail.clone()));
+            rows.insert(2, ("明细", d.detail.clone()));
         }
         if d.millivolts > 0 {
-            rows.insert(2, ("Battery voltage", format!("{} mV", d.millivolts)));
+            rows.insert(2, ("电池电压", format!("{} mV", d.millivolts)));
         }
         let lf = self.fonts.get(self.px(12.0), 400, Face::Text);
         let vf = self.fonts.get(self.px(13.0), 400, Face::Text);
@@ -641,7 +641,7 @@ impl Dash {
         let lists_h = self.px(210.0);
         let chart_h = (h - y - lists_h - gap - pad).max(self.px(200.0));
         let (label, span) = RANGES[self.range];
-        self.chart_card(b, rect(pad, y, w - 2 * pad, chart_h), &format!("Battery level, last {label}"), span, true);
+        self.chart_card(b, rect(pad, y, w - 2 * pad, chart_h), &format!("电量，最近 {label}"), span, true);
         let y = y + chart_h + gap;
         let half = (w - 2 * pad - gap) / 2;
         self.sessions_card(b, rect(pad, y, half, lists_h), true);
@@ -655,7 +655,7 @@ impl Dash {
         let p = self.px(16.0);
         let hf = self.fonts.get(self.px(14.0), 600, Face::Text);
         let gf = self.fonts.get(self.px(14.0), 400, Face::Icons);
-        let (icon, title, c) = if charging { ('\u{E945}', "Charging history", t.blue) } else { ('\u{E83F}', "Discharge history", t.green) };
+        let (icon, title, c) = if charging { ('\u{E945}', "充电历史", t.blue) } else { ('\u{E83F}', "放电历史", t.green) };
         b.text(&icon.to_string(), gf, c, rect(r.left + p, r.top + p, self.px(20.0), self.px(20.0)), DT_LEFT | DT_SINGLELINE);
         b.text(title, hf, t.text, rect(r.left + p + self.px(24.0), r.top + p - self.px(1.0), self.px(300.0), self.px(20.0)), DT_LEFT | DT_SINGLELINE);
         let list: Vec<stats::Session> = if charging {
@@ -667,7 +667,7 @@ impl Dash {
         let row_h = self.px(26.0);
         let mut yy = r.top + p + self.px(30.0);
         if list.is_empty() {
-            let msg = if charging { "No charging recorded in the last 7 days." } else { "No time on battery recorded yet." };
+            let msg = if charging { "最近 7 天没有充电记录。" } else { "还没有电池使用记录。" };
             b.text(msg, lf, t.faint, rect(r.left + p, yy, r.right - r.left - 2 * p, row_h), DT_LEFT | DT_SINGLELINE | DT_VCENTER);
             return;
         }
@@ -679,7 +679,7 @@ impl Dash {
             let when = if charging { fmt_when(s.start, now) } else { format!("{} - {}", fmt_when(s.start, now), fmt_when(s.end, now)) };
             let levels = format!("{}% → {}%", s.from, s.to);
             let tail = if charging {
-                format!("{}{}", fmt_hours(s.secs() as f64 / 3600.0), if s.completed { " · full" } else { "" })
+                format!("{}{}", fmt_hours(s.secs() as f64 / 3600.0), if s.completed { " · 充满" } else { "" })
             } else {
                 format!("{} · {}", fmt_hours(s.secs() as f64 / 3600.0), fmt_rate(-s.rate()))
             };
@@ -704,39 +704,39 @@ impl Dash {
         let (n, secs) = self.counted_discharges();
         let nc = self.counted_charges();
         let (tl, tl_note) = self.time_left();
-        let plural = |n: usize, w: &str| format!("{n} {w}{}", if n == 1 { "" } else { "s" });
+        let plural = |n: usize, w: &str| format!("{n} {w}");
         let cards: [(char, &str, Option<String>, String); 6] = [
             (
                 '\u{E83F}',
-                "Average battery life",
+                "平均电池续航",
                 st.battery_life_h.map(fmt_hours),
                 match st.battery_life_h {
-                    Some(_) => format!("Full to empty at the average rate, from {} on battery ({}).", plural(n, "session"), fmt_hours(secs as f64 / 3600.0)),
-                    None => "Needs at least an hour of measured use on battery, with a drop of 5% or more.".into(),
+                    Some(_) => format!("按平均速率从满电用到空，电池使用 {}，合计 {}。", plural(n, "次放电"), fmt_hours(secs as f64 / 3600.0)),
+                    None => "需要至少一小时实测电池使用，且电量下降 5% 以上。".into(),
                 },
             ),
-            ('\u{E916}', "Estimated time left", tl, tl_note),
+            ('\u{E916}', "预计剩余时间", tl, tl_note),
             (
                 '\u{E9D2}',
-                "Average discharge rate",
+                "平均放电速率",
                 st.discharge_rate.map(fmt_rate),
-                "Percent lost per hour of use on battery. Gaps in monitoring are left out.".into(),
+                "使用电池时每小时掉电的百分比。监控中断的时段不计入。".into(),
             ),
             (
                 '\u{E945}',
-                "Average charge rate",
+                "平均充电速率",
                 st.charge_rate.map(fmt_rate),
                 match nc {
-                    0 => "Needs a measured charge of 5% or more.".into(),
-                    n => format!("Percent gained per hour, from {}.", plural(n, "charging session")),
+                    0 => "需要至少 5% 的实测充电。".into(),
+                    n => format!("每小时充入的百分比，来自 {}。", plural(n, "次充电")),
                 },
             ),
-            ('\u{E81C}', "Full charge (0 → 100%)", st.full_charge_h.map(fmt_hours), "Estimated from the average charge rate.".into()),
+            ('\u{E81C}', "充满一次（0 → 100%）", st.full_charge_h.map(fmt_hours), "按平均充电速率估算。".into()),
             (
                 '\u{E823}',
-                "Average charging session",
+                "平均充电时长",
                 st.avg_charge_session_h.map(fmt_hours),
-                st.last_charged.map(|t| format!("Last charge ended {}.", fmt_when(t, now))).unwrap_or_else(|| "No charge recorded in the last 7 days.".into()),
+                st.last_charged.map(|t| format!("上次充电结束于 {}。", fmt_when(t, now))).unwrap_or_else(|| "最近 7 天没有充电记录。".into()),
             ),
         ];
         for (i, (icon, title, value, note)) in cards.into_iter().enumerate() {
@@ -751,7 +751,7 @@ impl Dash {
         let p = self.px(16.0);
         let hf = self.fonts.get(self.px(14.0), 600, Face::Text);
         b.text(
-            "How these figures are made",
+            "这些数字是怎么算出来的",
             hf,
             t.text,
             rect(r.left + p, r.top + p - self.px(2.0), r.right - r.left - 2 * p, self.px(20.0)),
@@ -759,10 +759,10 @@ impl Dash {
         );
         let nf = self.fonts.get(self.px(13.0), 400, Face::Text);
         let text = format!(
-            "{} readings over {} of monitoring{}. Only measured stretches count: time when BatteryHub was not running, the PC was off or the device was disconnected is left out, and nothing is filled in between readings. Sessions shorter than 30 minutes on battery or 5 minutes on power, or with a change under 5%, are not used for averages.",
+            "{} 条读数，共监控 {}{}。只统计实测时段：BatteryHub 未运行、电脑关机或设备断开的时间不计入，两次读数之间也不会补数据。电池使用不足 30 分钟、接电不足 5 分钟，或变化不足 5% 的时段，不参与平均计算。",
             st.readings,
             fmt_hours(st.monitored_secs as f64 / 3600.0),
-            st.first_reading.map(|t| format!(" since {}", fmt_when(t, now))).unwrap_or_default()
+            st.first_reading.map(|t| format!("，自 {} 起", fmt_when(t, now))).unwrap_or_default()
         );
         b.text(
             &text,
@@ -784,7 +784,7 @@ impl Dash {
         // Legend on the right of the title.
         let lf = self.fonts.get(self.px(12.0), 400, Face::Text);
         let mut lx = r.right - p;
-        for (label, c) in [("Charging", t.blue), ("On battery", t.green)] {
+        for (label, c) in [("充电", t.blue), ("使用电池", t.green)] {
             let lw = b.measure(label, lf).cx;
             lx -= lw;
             b.text(label, lf, t.dim, rect(lx, r.top + p - self.px(1.0), lw + 2, self.px(18.0)), DT_LEFT | DT_SINGLELINE);
@@ -856,7 +856,7 @@ impl Dash {
         let lw = (2.0 * self.s).max(1.5);
         if segs.is_empty() {
             let mf = self.fonts.get(self.px(13.0), 400, Face::Text);
-            b.text("No readings in this period yet.", mf, t.faint, plot, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            b.text("这段时间还没有读数。", mf, t.faint, plot, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         }
         for seg in &segs {
             // The last reading holds until the next one; the newest one is drawn up to its time.
@@ -933,11 +933,11 @@ impl Dash {
             Some(p) => {
                 let y = plot.bottom - (ph as f32 * p.level as f32 / 100.0) as i32;
                 (
-                    format!("{}  ·  {}%  ·  {}", fmt_when(tt, history::now_secs()), p.level, if p.charging() { "charging" } else { "on battery" }),
+                    format!("{}  ·  {}%  ·  {}", fmt_when(tt, history::now_secs()), p.level, if p.charging() { "充电" } else { "使用电池" }),
                     Some((y, p.charging())),
                 )
             }
-            None => (format!("{}  ·  no reading", fmt_when(tt, history::now_secs())), None),
+            None => (format!("{}  ·  无读数", fmt_when(tt, history::now_secs())), None),
         };
         let f = self.fonts.get((12.0 * self.s).round() as i32, 400, Face::Text);
         let (Some(o), Some(base)) = (self.overlay.as_mut(), self.base.as_ref()) else { return };
@@ -966,15 +966,15 @@ impl Dash {
 
 fn state_label(d: &DeviceStatus, t: &Theme) -> (&'static str, COLORREF) {
     if !d.connected {
-        ("Disconnected", t.faint)
+        ("未连接", t.faint)
     } else if d.asleep {
-        ("Asleep", t.faint)
+        ("休眠", t.faint)
     } else if d.is_full() {
-        ("Fully charged", t.green)
+        ("已充满", t.green)
     } else if d.charging {
-        ("Charging", t.blue)
+        ("充电中", t.blue)
     } else {
-        ("On battery", t.dim)
+        ("使用电池", t.dim)
     }
 }
 
@@ -1269,7 +1269,7 @@ mod tests {
         let s = DeviceStatus {
             key: "logi:unit:ABC".into(),
             name: "Office \"mouse\"".into(),
-            via: "2.4 GHz receiver".into(),
+            via: "2.4 GHz 接收器".into(),
             kind: DeviceKind::Mouse,
             percent: 42,
             detail: "L 80%, R 75%".into(),
@@ -1288,10 +1288,10 @@ mod tests {
     #[test]
     fn time_texts() {
         let now = 1_795_300_000;
-        assert_eq!(fmt_ago(now - 30, now), "just now");
-        assert_eq!(fmt_ago(now - 600, now), "10 min ago");
-        assert_eq!(fmt_ago(now - 5 * 3600, now), "5 h ago");
-        assert_eq!(fmt_ago(now - 3 * 86_400, now), "3 d ago");
+        assert_eq!(fmt_ago(now - 30, now), "刚刚");
+        assert_eq!(fmt_ago(now - 600, now), "10 分钟前");
+        assert_eq!(fmt_ago(now - 5 * 3600, now), "5 小时前");
+        assert_eq!(fmt_ago(now - 3 * 86_400, now), "3 天前");
         let m = local_midnight(now);
         assert!(m <= now && now - m < 86_400 + 3600);
         let l = local(m);

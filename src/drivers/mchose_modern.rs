@@ -107,7 +107,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("mchose:3837:{}", hex4(pid)),
             name: if name.is_empty() { "MCHOSE mouse".into() } else { name.to_string() },
             kind: DeviceKind::Mouse,
-            via: if cable { "USB cable" } else { "2.4 GHz receiver" }.into(),
+            via: if cable { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
             hw: Some((VID, pid)),
             grace_sec: 1800,
             ..Default::default()

@@ -76,7 +76,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("areson:{}:{}", hex4(VID), hex4(pid)),
             name: "Redragon wireless device".into(),
             kind: if kind == DeviceKind::Other { DeviceKind::Mouse } else { kind },
-            via: "2.4 GHz receiver".into(),
+            via: "2.4 GHz 接收器".into(),
             hw: Some((VID, pid)),
             grace_sec: 1800,
             ..Default::default()

@@ -96,7 +96,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("darmoshark:{}", hex4(receiver)),
             name: name.into(),
             kind: DeviceKind::Mouse,
-            via: "2.4 GHz receiver".into(),
+            via: "2.4 GHz 接收器".into(),
             percent: level,
             hw: Some((VID, receiver)),
             grace_sec: 1800,

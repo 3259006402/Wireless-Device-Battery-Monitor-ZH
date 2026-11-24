@@ -86,7 +86,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: KEY.into(),
             name: "HyperX Cloud II Core Wireless".into(),
             kind: DeviceKind::Headset,
-            via: "2.4 GHz dongle".into(),
+            via: "2.4 GHz 接收器".into(),
             hw: Some((VID, pid)),
             grace_sec: 60,
             ..Default::default()

@@ -54,7 +54,7 @@ fn status(pid: u16) -> DeviceStatus {
         key: format!("logi-g321:{}", hex4(pid)),
         name: "Logitech G321 LIGHTSPEED".into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         grace_sec: 60,
         vid: VID,
         hw: Some((VID, pid)),

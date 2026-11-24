@@ -1,86 +1,86 @@
-# Memory and CPU: BatteryHub (Rust) vs. original BatteryHub (C++) 1.1.0
+# 内存与 CPU：BatteryHub（Rust）对比原版 BatteryHub（C++）1.1.0
 
-Measured on 2026-11-21 on Windows 11 (build 26300), x64, with the same devices connected: Logitech PRO 2 LIGHTSPEED, SteelSeries Arctis Nova 3P receiver and AirPods (Bluetooth). Both programs used their defaults: taskbar strip, battery refresh every minute.
+测量于 2026-11-21，Windows 11（build 26300），x64，连接相同设备：Logitech PRO 2 LIGHTSPEED、SteelSeries Arctis Nova 3P 接收器和 AirPods（蓝牙）。两个程序都使用默认设置：任务栏电量条，每分钟刷新一次电量。
 
-Each program was sampled every 2 s with [`measure.ps1`](measure.ps1), which reports the numbers Task Manager shows. "Steady" means after start-up (t ≥ 30 s).
+每个程序都每 2 秒采样一次，工具为 [`measure.ps1`](measure.ps1)，它报告的是任务管理器显示的那些数字。“稳定”指启动之后（t ≥ 30 秒）。
 
-## Latest: side by side, v1.1 vs. C++ 1.1.0
+## 最新：并排对比，v1.1 对比 C++ 1.1.0
 
-Both programs running at the same time on the same PC (Windows 11 build 26300, x64), same devices connected (Logitech PRO 2 LIGHTSPEED receiver, SteelSeries Arctis Nova 3P dongle, Bluetooth), default settings (refresh every minute). The C++ app was given 75 s to start (it restarts itself once), then both were sampled every 2 s for 3 minutes with [`compare.ps1`](compare.ps1). Raw samples: [`side-by-side-rust-v1.1.csv`](side-by-side-rust-v1.1.csv), [`side-by-side-cpp-1.1.0.csv`](side-by-side-cpp-1.1.0.csv).
+两个程序同时运行在同一台电脑上（Windows 11 build 26300，x64），连接相同设备（Logitech PRO 2 LIGHTSPEED 接收器、SteelSeries Arctis Nova 3P 接收器、蓝牙），使用默认设置（每分钟刷新）。C++ 程序给了 75 秒启动时间（它会自行重启一次），随后两者都用 [`compare.ps1`](compare.ps1) 每 2 秒采样一次，持续 3 分钟。原始采样：[`side-by-side-rust-v1.1.csv`](side-by-side-rust-v1.1.csv)、[`side-by-side-cpp-1.1.0.csv`](side-by-side-cpp-1.1.0.csv)。
 
 | | **Rust v1.1** | C++ 1.1.0 |
 |---|---:|---:|
-| RAM in Task Manager ("Memory" = private working set), median | **0.20 MB** | 4.66 MB |
-| RAM in Task Manager, average | **0.33 MB** | 4.65 MB |
-| RAM in Task Manager, max | **0.82 MB** | 4.92 MB |
-| Working set incl. shared system DLLs, average | **1.27 MB** | 27.47 MB |
-| Private bytes (commit), average | **4.59 MB** | 5.98 MB |
-| CPU time per minute | **0.11 s** | 0.88 s |
-| Threads (max) | **9** | 15 |
-| Handles (max) | 367 | 375 |
-| Program file | **500 KB** | 1,958 KB |
+| 任务管理器内存（“内存”＝专用工作集），中位数 | **0.20 MB** | 4.66 MB |
+| 任务管理器内存，平均值 | **0.33 MB** | 4.65 MB |
+| 任务管理器内存，最大值 | **0.82 MB** | 4.92 MB |
+| 工作集（含共享系统 DLL），平均值 | **1.27 MB** | 27.47 MB |
+| 专用字节（提交），平均值 | **4.59 MB** | 5.98 MB |
+| 每分钟 CPU 时间 | **0.11 秒** | 0.88 秒 |
+| 线程数（最大） | **9** | 15 |
+| 句柄数（最大） | 367 | 375 |
+| 程序文件大小 | **500 KB** | 1,958 KB |
 
-Handles stayed flat (366 -> 367) over the run, and the Rust process used 16 GDI objects, so there is no leak. Rust v1.1 has more handles than v1.0 (229) because of the newer features: device-change notifications, the hover tooltip and Bluetooth connection checks.
+测试期间句柄数保持平稳（366 → 367），Rust 进程使用了 16 个 GDI 对象，因此不存在泄漏。Rust v1.1 的句柄数比 v1.0（229）多，是因为新增了功能：设备变化通知、悬停提示和蓝牙连接检查。
 
-## RAM as Task Manager shows it (v1.1)
+## 任务管理器眼中的内存（v1.1）
 
-v1.1 hands memory back to Windows after every periodic job (battery read, Bluetooth check every 3 s, receiver check every 10 s) and caches its settings instead of reading the registry every second. Private working set of v1.1, sampled every second for 90 s after start-up:
+v1.1 在每次周期任务之后（读取电量、每 3 秒一次蓝牙检查、每 10 秒一次接收器检查）都会把内存交还 Windows，并缓存设置，而不是每秒读取注册表。v1.1 的专用工作集，启动后每 1 秒采样一次，共 90 秒：
 
 | | v1.0.1.1 | **v1.1** |
 |---|---:|---:|
-| Median | 1.12 MB | **0.20 MB** |
-| Average | 1.05 MB | **0.21 MB** |
-| 90th percentile | - | **0.21 MB** |
-| Max (briefly, during a full read) | 1.36 MB | 1.52 MB |
+| 中位数 | 1.12 MB | **0.20 MB** |
+| 平均值 | 1.05 MB | **0.21 MB** |
+| 第 90 百分位 | - | **0.21 MB** |
+| 最大值（完整读取时短暂出现） | 1.36 MB | 1.52 MB |
 
-## RAM as Task Manager shows it (v1.0.1)
+## 任务管理器眼中的内存（v1.0.1）
 
-Task Manager's default "Memory" column is the **private working set**: memory that belongs to the program alone and is in RAM right now. Measured with the `\Process(*)\Working Set - Private` counter, 30 samples over 60 s for each program (measured one after the other, default settings):
+任务管理器默认的“内存”列是**专用工作集**：只属于该程序、且此刻在内存中的部分。用 `\Process(*)\Working Set - Private` 计数器测量，每个程序 60 秒内采样 30 次（依次测量，默认设置）：
 
 | | **Rust** | C++ 1.1.0 |
 |---|---:|---:|
-| Private working set, average | **0.76 MB** | 4.15 MB |
-| Private working set, max (during a read) | **1.39 MB** | 4.29 MB |
+| 专用工作集，平均值 | **0.76 MB** | 4.15 MB |
+| 专用工作集，最大值（读取期间） | **1.39 MB** | 4.29 MB |
 
-## Result
+## 结果
 
-| | **Rust v1.0** | C++ 1.1.0 | Difference |
+| | **Rust v1.0** | C++ 1.1.0 | 差异 |
 |---|---:|---:|---:|
-| Program file size | **368 KB** | 1,958 KB | −81% |
-| Working set (avg, steady) | **2.4 MB** | 29.4 MB | −92% |
-| Working set during a read (peak) | **17.8 MB** | 29.8 MB | −40% |
-| Private memory (avg, steady) | **3.2 MB** | 5.6 MB | −43% |
-| Handles (max) | **229** | 392 | −42% |
-| Threads (max) | **10** | 15 | −33% |
-| CPU time per minute (steady) | **~0.02 s** | ~0.64 s | −97% |
+| 程序文件大小 | **368 KB** | 1,958 KB | −81% |
+| 工作集（稳定时平均） | **2.4 MB** | 29.4 MB | −92% |
+| 工作集（读取时峰值） | **17.8 MB** | 29.8 MB | −40% |
+| 专用内存（稳定时平均） | **3.2 MB** | 5.6 MB | −43% |
+| 句柄数（最大） | **229** | 392 | −42% |
+| 线程数（最大） | **10** | 15 | −33% |
+| 每分钟 CPU 时间（稳定时） | **约 0.02 秒** | 约 0.64 秒 | −97% |
 
-## What the optimisation changed (Rust, before → after)
+## 优化带来了什么变化（Rust，之前 → 之后）
 
-Both builds were measured back to back under the same conditions (3 minutes each, the C++ app running at the same time in both runs): [`baseline.csv`](baseline.csv) and [`optimized.csv`](optimized.csv).
+两个构建在相同条件下背靠背测量（各 3 分钟，两次测量中 C++ 程序都在同时运行）：[`baseline.csv`](baseline.csv) 和 [`optimized.csv`](optimized.csv)。
 
-| | Before | After |
+| | 之前 | 之后 |
 |---|---:|---:|
-| Working set (avg, steady) | 23.7 MB | **2.4 MB** |
-| Private memory (avg, steady) | 3.9 MB | **3.2 MB** |
-| Handles (max) | 303 | **229** |
-| CPU time per minute | 0.37 s | **0.02 s** |
+| 工作集（稳定时平均） | 23.7 MB | **2.4 MB** |
+| 专用内存（稳定时平均） | 3.9 MB | **3.2 MB** |
+| 句柄数（最大） | 303 | **229** |
+| 每分钟 CPU 时间 | 0.37 秒 | **0.02 秒** |
 
-What was changed:
+具体改动：
 
-1. **Bluetooth LE listening only while reading.** The AirPods / Fast Pair broadcast watcher used to run all the time and handle every advertisement nearby (dozens per second). It now runs for the few seconds of each read and is stopped in between. This is the main CPU saving.
-2. **No full device scan on every read.** The HID device list (which opens every HID device) is cached. It is rebuilt only at start-up, after a device connects or disconnects, on *Refresh devices*, and at least every 10 minutes. Container ids of devices are cached too.
-3. **Bluetooth fallback reads only Bluetooth device nodes** (`BTHENUM`, `BTHLE`, `BTHLEDEVICE`) instead of enumerating every device node on the system.
-4. **Windows.Gaming.Input is loaded only when an Xbox-type controller is present** (an XInput slot in use, or a Microsoft / GameSir gamepad over Bluetooth).
-5. **No IME / text services**, since the program never takes text input.
-6. **Memory used only during a read is handed back** to Windows after each read (`SetProcessWorkingSetSize`). This is why the steady working set is low. During a read it briefly rises again (peak 17.8 MB), mostly from shared system DLLs.
+1. **只在读取时监听蓝牙 LE。** AirPods / Fast Pair 广播监听器以前一直运行，并处理附近每一份广播（每秒几十条）。现在它只在每次读取的那几秒里运行，其余时间停止。这是 CPU 占用的主要节省来源。
+2. **不再在每次读取时做完整设备扫描。** HID 设备列表（会打开每一个 HID 设备）被缓存，只在启动时、设备连接或断开之后、点击*刷新设备*时以及至少每 10 分钟重建一次。设备的容器 ID 也会缓存。
+3. **蓝牙回退只读取蓝牙设备节点**（`BTHENUM`、`BTHLE`、`BTHLEDEVICE`），而不是枚举系统上的所有设备节点。
+4. **只有在存在 Xbox 类型手柄时**才加载 Windows.Gaming.Input（有 XInput 槽位在使用，或有微软 / GameSir 手柄通过蓝牙连接）。
+5. **不使用 IME / 文本服务**，因为程序从不接收文本输入。
+6. **只在读取期间使用的内存会在每次读取后交还** Windows（`SetProcessWorkingSetSize`）。这就是稳定时工作集很低的原因。读取期间它会短暂回升（峰值 17.8 MB），主要来自共享系统 DLL。
 
-## Notes
+## 说明
 
-- Working set includes shared system DLLs (GDI, WinRT, Bluetooth, and DLLs that tools such as Windhawk inject into every process). Private memory is what the program itself allocates.
-- The C++ app does more: about 100 device drivers, battery history, an updater, brand colours and more options. Part of the difference is less code doing less work, not only the language.
-- The C++ app restarted itself about 40 s after launch, so its steady state was measured on the restarted process. Its first-run samples are in [`cpp.csv`](cpp.csv). The first Rust run (before the optimisation) is in [`rust.csv`](rust.csv).
+- 工作集包含共享系统 DLL（GDI、WinRT、蓝牙，以及 Windhawk 这类工具注入到每个进程里的 DLL）。专用内存才是程序自己分配的部分。
+- C++ 程序做的事更多：约 100 个设备驱动、电量历史、更新器、品牌配色和更多选项。差异有一部分来自“代码更少、做的事更少”，并不只是语言不同。
+- C++ 程序在启动约 40 秒后自行重启，因此它的稳定状态是在重启后的进程上测量的。它首次运行的采样见 [`cpp.csv`](cpp.csv)。Rust 的首次运行（优化之前）见 [`rust.csv`](rust.csv)。
 
-Reproduce:
+复现：
 
 ```powershell
 .\bench\measure.ps1 -Exe "$env:LOCALAPPDATA\Programs\BatteryHub\Taskbar\batteryhub-taskbar.exe" -Seconds 180 -Csv bench\optimized.csv

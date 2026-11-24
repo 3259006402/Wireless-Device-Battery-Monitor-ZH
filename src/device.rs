@@ -32,13 +32,13 @@ impl DeviceKind {
 
     pub fn label(self) -> &'static str {
         match self {
-            DeviceKind::Mouse => "Mouse",
-            DeviceKind::Headset => "Headset",
-            DeviceKind::Keyboard => "Keyboard",
-            DeviceKind::Gamepad => "Controller",
-            DeviceKind::Phone => "Phone",
-            DeviceKind::Microphone => "Microphone",
-            DeviceKind::Other => "Device",
+            DeviceKind::Mouse => "鼠标",
+            DeviceKind::Headset => "耳机",
+            DeviceKind::Keyboard => "键盘",
+            DeviceKind::Gamepad => "手柄",
+            DeviceKind::Phone => "手机",
+            DeviceKind::Microphone => "麦克风",
+            DeviceKind::Other => "设备",
         }
     }
 }
@@ -49,7 +49,7 @@ pub struct DeviceStatus {
     /// Stable identity across polls.
     pub key: String,
     pub name: String,
-    /// "2.4 GHz receiver", "Bluetooth", "USB cable", ...
+    /// "2.4 GHz 接收器", "Bluetooth", "USB 线缆", ...
     pub via: String,
     pub kind: DeviceKind,
     /// 0..=100, or -1 when unknown right now.
@@ -100,7 +100,7 @@ impl DeviceStatus {
     /// Short status text, e.g. "93%", "45% ⚡", "Full ✓", "?".
     pub fn status_text(&self) -> String {
         if !self.connected {
-            return "disconnected".into();
+            return "未连接".into();
         }
         let mut t = if self.percent >= 0 {
             format!("{}%", self.percent)
@@ -115,7 +115,7 @@ impl DeviceStatus {
             t.push_str(" ⚡");
         }
         if self.asleep {
-            t.push_str(" (asleep)");
+            t.push_str("（休眠）");
         }
         t
     }
@@ -144,15 +144,15 @@ impl DeviceStatus {
     /// "32%, charging" / "100%, fully charged" / "32%, on battery" - for menus and tooltips.
     pub fn charge_text(&self) -> String {
         let state = if !self.connected {
-            "disconnected"
+            "未连接"
         } else if self.is_full() {
-            "fully charged"
+            "已充满"
         } else if self.charging {
-            "charging"
+            "充电中"
         } else if self.asleep {
-            "asleep, last known level"
+            "休眠，最后已知电量"
         } else {
-            "on battery"
+            "使用电池"
         };
         format!("{}, {state}", self.level())
     }

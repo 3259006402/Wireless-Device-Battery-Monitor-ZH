@@ -141,18 +141,18 @@ pub fn append_device_menus(menu: HMENU, devices: &[DeviceStatus], settings_key: 
             let _ = AppendMenuW(sub, MF_STRING | MF_GRAYED, 0, &hs(&format!("{} - {}", d.name, d.charge_text())));
             let _ = AppendMenuW(sub, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
             for (item, label, g) in [
-                (ITEM_DASHBOARD, "Dashboard...", glyph::DASHBOARD),
-                (ITEM_HISTORY, "Battery history", glyph::HISTORY),
-                (ITEM_STATS, "Statistics", glyph::STATISTICS),
+                (ITEM_DASHBOARD, "仪表盘...", glyph::DASHBOARD),
+                (ITEM_HISTORY, "电量历史", glyph::HISTORY),
+                (ITEM_STATS, "统计", glyph::STATISTICS),
             ] {
                 let _ = AppendMenuW(sub, MF_STRING, id(item), &hs(label));
                 icons.set(sub, id(item) as u32, false, g);
             }
             let _ = AppendMenuW(sub, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
-            let _ = AppendMenuW(sub, MF_STRING, id(ITEM_RENAME), &hs("Rename device..."));
+            let _ = AppendMenuW(sub, MF_STRING, id(ITEM_RENAME), &hs("重命名设备..."));
             icons.set(sub, id(ITEM_RENAME) as u32, false, glyph::RENAME);
             if renamed.contains(&d.key) {
-                let _ = AppendMenuW(sub, MF_STRING, id(ITEM_RESET_NAME), &hs("Use the device's own name"));
+                let _ = AppendMenuW(sub, MF_STRING, id(ITEM_RESET_NAME), &hs("使用设备本名"));
                 icons.set(sub, id(ITEM_RESET_NAME) as u32, false, glyph::RESET);
             }
             let _ = AppendMenuW(sub, MF_SEPARATOR, 0, windows::core::PCWSTR::null());
@@ -161,15 +161,15 @@ pub fn append_device_menus(menu: HMENU, devices: &[DeviceStatus], settings_key: 
                 let current = threshold(settings_key, &d.key);
                 for (j, t) in THRESHOLDS.iter().enumerate() {
                     let check = if *t == current { MF_CHECKED } else { MF_UNCHECKED };
-                    let def = if *t == DEFAULT_THRESHOLD { "  (default)" } else { "" };
+                    let def = if *t == DEFAULT_THRESHOLD { "  （默认）" } else { "" };
                     let _ = AppendMenuW(levels, MF_STRING | check, id(ITEM_THRESHOLD + j), &hs(&format!("{t}%{def}")));
                 }
                 let n = windows::Win32::UI::WindowsAndMessaging::GetMenuItemCount(Some(sub));
-                let _ = AppendMenuW(sub, MF_STRING | MF_POPUP, levels.0 as usize, &hs(&format!("Red warning at or below {current}%")));
+                let _ = AppendMenuW(sub, MF_STRING | MF_POPUP, levels.0 as usize, &hs(&format!("{current}% 及以下显示红色警告")));
                 icons.set(sub, n as u32, true, glyph::WARNING);
             }
             let check = if warn_critical(settings_key, &d.key) { MF_CHECKED } else { MF_UNCHECKED };
-            let _ = AppendMenuW(sub, MF_STRING | check, id(ITEM_WARN5), &hs("Warn at 5% (notification)"));
+            let _ = AppendMenuW(sub, MF_STRING | check, id(ITEM_WARN5), &hs("5% 时提醒（通知）"));
             icons.set(sub, id(ITEM_WARN5) as u32, false, glyph::BELL);
 
             let n = windows::Win32::UI::WindowsAndMessaging::GetMenuItemCount(Some(menu));

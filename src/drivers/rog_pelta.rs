@@ -106,7 +106,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: KEY.into(),
             name: "ROG Pelta".into(),
             kind: DeviceKind::Headset,
-            via: if cable { "USB cable" } else { "2.4 GHz dongle" }.into(),
+            via: if cable { "USB 线缆" } else { "2.4 GHz 接收器" }.into(),
             hw: Some((VID, pid)),
             grace_sec: 1800,
             ..Default::default()

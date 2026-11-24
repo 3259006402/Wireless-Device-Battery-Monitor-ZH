@@ -112,7 +112,7 @@ fn raw_query(d: &HidDev, cmd: u8, timeout_ms: u64) -> Option<Vec<u8>> {
 }
 
 fn base(key: String, name: &str, kind: DeviceKind, pid: u16) -> DeviceStatus {
-    DeviceStatus { key, name: name.into(), kind, via: "2.4 GHz receiver".into(), hw: Some((VID, pid)), grace_sec: 1800, ..Default::default() }
+    DeviceStatus { key, name: name.into(), kind, via: "2.4 GHz 接收器".into(), hw: Some((VID, pid)), grace_sec: 1800, ..Default::default() }
 }
 
 fn read_mouse(c: &HidColl) -> Option<MouseReading> {

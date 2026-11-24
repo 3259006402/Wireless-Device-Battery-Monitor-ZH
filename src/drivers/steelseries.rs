@@ -17,7 +17,7 @@ fn headset(pid: u16, name: &str) -> DeviceStatus {
         key: format!("steelseries:{}", hex4(pid)),
         name: name.into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         ..Default::default()
     }
 }
@@ -27,7 +27,7 @@ fn mouse(pid: u16, name: &str, wired: bool) -> DeviceStatus {
         key: format!("steelseries:{}", hex4(pid)),
         name: name.into(),
         kind: DeviceKind::Mouse,
-        via: if wired { "USB cable".into() } else { "2.4 GHz receiver".into() },
+        via: if wired { "USB 线缆".into() } else { "2.4 GHz 接收器".into() },
         ..Default::default()
     }
 }
@@ -321,7 +321,7 @@ pub fn poll(ctx: &mut PollContext) {
             let Some(s) = poll_fn(&d, pid) else { continue };
             // Aerox/Prime and Rival 650 can answer on both products; keep one entry, preferring the cable.
             if let Some(dup) = ctx.out.iter_mut().find(|o| o.key == s.key) {
-                if s.via == "USB cable" {
+                if s.via == "USB 线缆" {
                     *dup = s;
                     dup.vid = vid;
                     dup.hw = Some((vid, pid));

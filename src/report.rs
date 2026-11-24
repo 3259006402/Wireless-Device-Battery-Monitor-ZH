@@ -179,7 +179,7 @@ pub fn scan() -> Vec<Candidate> {
     }
     for d in &mut out {
         if d.name.is_empty() {
-            d.name = "Unknown device".into();
+            d.name = "未知设备".into();
         }
     }
     sort(&mut out);

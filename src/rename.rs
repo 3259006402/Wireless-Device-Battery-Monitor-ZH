@@ -104,11 +104,11 @@ impl Dlg {
         b.clear(t.bg);
         let p = self.px(24.0);
         let tf = self.fonts.get(self.px(20.0), 600, Face::Display);
-        b.text("Rename device", tf, t.text, rect(p, self.px(18.0), w - 2 * p, self.px(30.0)), DT_LEFT | DT_SINGLELINE);
+        b.text("重命名设备", tf, t.text, rect(p, self.px(18.0), w - 2 * p, self.px(30.0)), DT_LEFT | DT_SINGLELINE);
         let nf = self.fonts.get(self.px(13.0), 400, Face::Text);
         let own = if self.reported.is_empty() { self.status.name.clone() } else { self.reported.clone() };
         b.text(
-            &format!("Shown on the taskbar and in BatteryHub. The device itself keeps its name (\"{own}\")."),
+            &format!("只显示在任务栏和 BatteryHub 中。设备本身仍使用它自己的名字（\"{own}\"）。"),
             nf,
             t.dim,
             rect(p, self.px(54.0), w - 2 * p, self.px(40.0)),
@@ -124,13 +124,13 @@ impl Dlg {
         let y = h - p - bh2;
         let save = rect(w - p - 2 * bw2 - self.px(8.0), y, bw2, bh2);
         let cancel = rect(w - p - bw2, y, bw2, bh2);
-        gui::button(&mut b, &mut self.fonts, &t, self.s, save, "Save", true, (self.hover == Some(ID_SAVE)) as u8 as f32, true);
-        gui::button(&mut b, &mut self.fonts, &t, self.s, cancel, "Cancel", false, (self.hover == Some(ID_CANCEL)) as u8 as f32, true);
+        gui::button(&mut b, &mut self.fonts, &t, self.s, save, "保存", true, (self.hover == Some(ID_SAVE)) as u8 as f32, true);
+        gui::button(&mut b, &mut self.fonts, &t, self.s, cancel, "取消", false, (self.hover == Some(ID_CANCEL)) as u8 as f32, true);
         self.hits.add(save, ID_SAVE);
         self.hits.add(cancel, ID_CANCEL);
         if self.renamed {
             let lf = self.fonts.get(self.px(13.0), 400, Face::Text);
-            let label = "Use the device's own name";
+            let label = "使用设备本名";
             let lw = b.measure(label, lf).cx + self.px(12.0);
             let r = rect(p - self.px(6.0), y, lw, bh2);
             if self.hover == Some(ID_RESET) {
@@ -263,7 +263,7 @@ pub fn run_standalone(args: &[String]) {
         let work = mi.rcWork;
         let (x, y) = (work.left + (work.right - work.left - w) / 2, work.top + (work.bottom - work.top - h) / 2);
         let Ok(hwnd) =
-            CreateWindowExW(WINDOW_EX_STYLE::default(), CLASS, w!("Rename device - BatteryHub"), style, x, y, w, h, None, None, Some(hinst.into()), None)
+            CreateWindowExW(WINDOW_EX_STYLE::default(), CLASS, w!("重命名设备 - BatteryHub"), style, x, y, w, h, None, None, Some(hinst.into()), None)
         else {
             return;
         };

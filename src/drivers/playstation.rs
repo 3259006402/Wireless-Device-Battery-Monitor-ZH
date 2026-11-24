@@ -91,7 +91,7 @@ pub fn poll(ctx: &mut PollContext) {
             } else if c.pid == 0x0BA0 {
                 "Wireless adapter"
             } else {
-                "USB cable"
+                "USB 线缆"
             }
             .into(),
             percent: pct,

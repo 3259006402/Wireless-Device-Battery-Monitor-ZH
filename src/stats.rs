@@ -151,22 +151,22 @@ pub fn compute(pts: &[Point], current: Option<(i32, bool)>) -> Stats {
 pub fn fmt_hours(h: f64) -> String {
     let mins = (h * 60.0).round() as i64;
     if mins < 1 {
-        "under 1 min".into()
+        "不足 1 分钟".into()
     } else if mins < 60 {
-        format!("{mins} min")
+        format!("{mins} 分钟")
     } else if mins < 48 * 60 {
         let (hh, mm) = (mins / 60, mins % 60);
         // Over 10 h, minutes are noise: round to the hour.
-        if hh >= 10 || mm == 0 { format!("{} h", (mins + 30) / 60) } else { format!("{hh} h {mm} min") }
+        if hh >= 10 || mm == 0 { format!("{} 小时", (mins + 30) / 60) } else { format!("{hh} 小时 {mm} 分钟") }
     } else {
         let hh = (mins + 30) / 60;
-        if hh % 24 == 0 { format!("{} d", hh / 24) } else { format!("{} d {} h", hh / 24, hh % 24) }
+        if hh % 24 == 0 { format!("{} 天", hh / 24) } else { format!("{} 天 {} 小时", hh / 24, hh % 24) }
     }
 }
 
 /// "12.5 %/h", "0.8 %/h".
 pub fn fmt_rate(r: f64) -> String {
-    if r >= 10.0 { format!("{r:.0} %/h") } else { format!("{r:.1} %/h") }
+    if r >= 10.0 { format!("{r:.0} %/小时") } else { format!("{r:.1} %/小时") }
 }
 
 #[cfg(test)]
@@ -237,11 +237,11 @@ mod tests {
 
     #[test]
     fn formats() {
-        assert_eq!(fmt_hours(0.5), "30 min");
-        assert_eq!(fmt_hours(3.34), "3 h 20 min");
-        assert_eq!(fmt_hours(12.4), "12 h");
-        assert_eq!(fmt_hours(52.0), "2 d 4 h");
-        assert_eq!(fmt_rate(4.26), "4.3 %/h");
-        assert_eq!(fmt_rate(12.4), "12 %/h");
+        assert_eq!(fmt_hours(0.5), "30 分钟");
+        assert_eq!(fmt_hours(3.34), "3 小时 20 分钟");
+        assert_eq!(fmt_hours(12.4), "12 小时");
+        assert_eq!(fmt_hours(52.0), "2 天 4 小时");
+        assert_eq!(fmt_rate(4.26), "4.3 %/小时");
+        assert_eq!(fmt_rate(12.4), "12 %/小时");
     }
 }

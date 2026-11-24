@@ -28,6 +28,9 @@ use crate::report::{self, Candidate, Request, TYPES};
 const CLASS: PCWSTR = w!("BatteryHubRequest");
 const WM_CANDIDATES: u32 = WM_APP + 20;
 
+/// Display labels for `report::TYPES`, in the same order (the request itself keeps the English type).
+const TYPE_LABELS: [&str; 5] = ["鼠标", "键盘", "耳机", "手柄", "其他"];
+
 const IDC_DEVICE: i32 = 101;
 const IDC_MODEL: i32 = 102;
 const IDC_TYPE: i32 = 103;
@@ -127,7 +130,7 @@ pub fn show() {
         let x = work.left + (work.right - work.left - w) / 2;
         let y = work.top + (work.bottom - work.top - h) / 2;
         if let Ok(h) =
-            CreateWindowExW(WINDOW_EX_STYLE(0), CLASS, w!("BatteryHub: request support for a device"), style, x, y, w, h, None, None, Some(hinst.into()), None)
+            CreateWindowExW(WINDOW_EX_STYLE(0), CLASS, w!("BatteryHub：请求支持某个设备"), style, x, y, w, h, None, None, Some(hinst.into()), None)
         {
             let _ = ShowWindow(h, SW_SHOW);
             let _ = SetForegroundWindow(h);
@@ -233,8 +236,8 @@ fn create_controls() {
     let tab = WS_TABSTOP.0;
     add(
         w!("STATIC"),
-        "Is one of your devices not shown? Pick it below. Send opens a new issue on the project's GitHub page, \
-         filled in with what is shown here; you check it and submit it there (a GitHub account is needed).",
+        "有设备没有显示出来吗？在下面选择它。“发送”会在项目的 GitHub 页面上打开一个新的 issue，\
+         内容就是这里显示的内容；你在那里检查并提交（需要一个 GitHub 账号）。",
         0,
         -1,
         L,
@@ -243,32 +246,32 @@ fn create_controls() {
         48,
         none,
     );
-    add(w!("STATIC"), "Device", 0, -1, L, 66, W, 18, none);
+    add(w!("STATIC"), "设备", 0, -1, L, 66, W, 18, none);
     let dev = add(w!("COMBOBOX"), "", CBS_DROPDOWNLIST | WS_VSCROLL.0 | tab, IDC_DEVICE, L, 84, W, 320, none);
-    send(dev, CB_ADDSTRING, 0, w!("Scanning devices...").0 as isize);
+    send(dev, CB_ADDSTRING, 0, w!("正在扫描设备...").0 as isize);
     send(dev, CB_SETCURSEL, 0, 0);
     enable(IDC_DEVICE, false);
-    add(w!("STATIC"), "Device name (as it's sold)", 0, -1, L, 116, W, 18, none);
+    add(w!("STATIC"), "设备名称（商品名）", 0, -1, L, 116, W, 18, none);
     let model = add(w!("EDIT"), "", ES_AUTOHSCROLL | tab, IDC_MODEL, L, 134, W, 24, edge);
     send(model, EM_LIMITTEXT, MODEL_MAX, 0);
-    add(w!("STATIC"), "Type", 0, -1, L, 166, W, 18, none);
+    add(w!("STATIC"), "类型", 0, -1, L, 166, W, 18, none);
     let ty = add(w!("COMBOBOX"), "", CBS_DROPDOWNLIST | tab, IDC_TYPE, L, 184, 200, 200, none);
-    for t in TYPES {
+    for t in TYPE_LABELS {
         send(ty, CB_ADDSTRING, 0, HSTRING::from(t).as_ptr() as isize);
     }
     send(ty, CB_SETCURSEL, TYPES.len() - 1, 0);
-    add(w!("STATIC"), "Your name (optional, shown in the GitHub issue)", 0, -1, L, 216, W, 18, none);
+    add(w!("STATIC"), "你的名字（可选，会显示在 GitHub issue 中）", 0, -1, L, 216, W, 18, none);
     let name = add(w!("EDIT"), "", ES_AUTOHSCROLL | tab, IDC_NAME, L, 234, W, 24, edge);
     send(name, EM_LIMITTEXT, NAME_MAX, 0);
-    add(w!("STATIC"), "Anything else we should know? (optional)", 0, -1, L, 266, W, 18, none);
+    add(w!("STATIC"), "还有别的需要说明的吗？（可选）", 0, -1, L, 266, W, 18, none);
     let notes = add(w!("EDIT"), "", ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL.0 | tab, IDC_NOTES, L, 284, W, 54, edge);
     send(notes, EM_LIMITTEXT, NOTES_MAX, 0);
-    add(w!("STATIC"), "This is exactly what the GitHub issue will contain:", 0, -1, L, 346, W, 18, none);
+    add(w!("STATIC"), "GitHub issue 中将包含以下内容：", 0, -1, L, 346, W, 18, none);
     add(w!("EDIT"), "", ES_MULTILINE | ES_READONLY | WS_VSCROLL.0 | tab, IDC_PREVIEW, L, 364, W, 132, edge);
-    add(w!("STATIC"), "Scanning your devices...", 0, IDC_STATUS, L, 502, W, 44, none);
-    add(w!("BUTTON"), "Copy full report", tab, IDC_COPY, L, 550, 180, 28, none);
-    add(w!("BUTTON"), "Send", BS_DEFPUSHBUTTON | tab, IDC_SEND, L + W - 186, 550, 90, 28, none);
-    add(w!("BUTTON"), "Close", tab, IDC_CLOSE, L + W - 90, 550, 90, 28, none);
+    add(w!("STATIC"), "正在扫描你的设备...", 0, IDC_STATUS, L, 502, W, 44, none);
+    add(w!("BUTTON"), "复制完整报告", tab, IDC_COPY, L, 550, 180, 28, none);
+    add(w!("BUTTON"), "发送", BS_DEFPUSHBUTTON | tab, IDC_SEND, L + W - 186, 550, 90, 28, none);
+    add(w!("BUTTON"), "关闭", tab, IDC_CLOSE, L + W - 90, 550, 90, 28, none);
     enable(IDC_SEND, false);
 }
 
@@ -306,8 +309,8 @@ fn issue() -> (String, String) {
 fn update_preview() {
     let (r, _) = current();
     let (title, body) = issue();
-    let shown = if r.model.is_empty() { "(type the device name)".to_string() } else { title };
-    set_text(IDC_PREVIEW, &format!("Title: {shown}\n\n{body}").replace('\n', "\r\n"));
+    let shown = if r.model.is_empty() { "（请输入设备名称）".to_string() } else { title };
+    set_text(IDC_PREVIEW, &format!("标题：{shown}\n\n{body}").replace('\n', "\r\n"));
     enable(IDC_SEND, device_chosen() && r.model.chars().count() >= 2);
 }
 
@@ -325,14 +328,14 @@ fn fill_devices(list: Vec<Candidate>) {
     for c in &list {
         send(cb, CB_ADDSTRING, 0, HSTRING::from(c.label()).as_ptr() as isize);
     }
-    send(cb, CB_ADDSTRING, 0, w!("My device is not in this list").0 as isize);
+    send(cb, CB_ADDSTRING, 0, w!("我的设备不在列表中").0 as isize);
     STATE.with(|s| {
         let mut s = s.borrow_mut();
         s.cands = list;
         s.scanned = true;
     });
     enable(IDC_DEVICE, true);
-    set_text(IDC_STATUS, "Pick the device that isn't shown. Devices with a vendor-specific interface or audio are listed first.");
+    set_text(IDC_STATUS, "请选择没有显示出来的设备。带厂商专用接口或音频接口的设备会排在前面。");
     update_preview();
 }
 
@@ -470,19 +473,19 @@ extern "system" fn proc_(h: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
                             if r.0 as isize > 32 {
                                 set_text(
                                     IDC_STATUS,
-                                    "GitHub opened in your browser with the request filled in. Check it and click Create to \
-                                     submit it. Thank you!",
+                                    "已在浏览器中打开 GitHub，请求内容已填好。检查后点击 Create 提交即可。\
+                                     谢谢！",
                                 );
                             } else {
                                 let ok = copy_to_clipboard(h, &format!("{title}\n\n{body}"));
                                 set_text(
                                     IDC_STATUS,
                                     if ok {
-                                        "Couldn't open the browser. The request is copied: paste it into a new issue at \
-                                         github.com/ferloom/Wireless-Device-Battery-Monitor/issues."
+                                        "无法打开浏览器。请求内容已复制：请粘贴到 \
+                                         github.com/ferloom/Wireless-Device-Battery-Monitor/issues 的新 issue 中。"
                                     } else {
-                                        "Couldn't open the browser. Please open a new issue at \
-                                         github.com/ferloom/Wireless-Device-Battery-Monitor/issues."
+                                        "无法打开浏览器。请到 \
+                                         github.com/ferloom/Wireless-Device-Battery-Monitor/issues 新建一个 issue。"
                                     },
                                 );
                             }
@@ -496,10 +499,10 @@ extern "system" fn proc_(h: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LRESULT {
                         set_text(
                             IDC_STATUS,
                             if done {
-                                "The full report (with every device BatteryHub sees) is copied. Paste it into the GitHub \
-                                 issue if we ask for more details."
+                                "完整报告（包含 BatteryHub 能看到的所有设备）已复制。如果我们需要更多细节，请把它粘贴到 \
+                                 GitHub issue 里。"
                             } else {
-                                "Couldn't copy to the clipboard. Please try again."
+                                "复制到剪贴板失败，请重试。"
                             },
                         );
                     }

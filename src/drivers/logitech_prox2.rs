@@ -268,7 +268,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: format!("logi-centurion:{}", hex4(PID)),
         name: "Logitech G PRO X 2 LIGHTSPEED".into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz receiver".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, PID)),
         grace_sec: 60,
         ..Default::default()

@@ -1,106 +1,108 @@
-# BatteryHub v1.6 (Rust)
+# BatteryHub v1.6（Rust）
 
-An ultra-lightweight Rust implementation of BatteryHub for Windows, a recode of [krisgfx9/Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor). All credit for the original idea, look and device protocols goes to the original project.
+BatteryHub 的 Windows 超轻量 Rust 实现，是对 [krisgfx9/Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor) 的重新实现（recode）。最初的想法、外观以及各设备的通信协议都来自原项目，一切荣誉归原项目作者。
 
-## Download
+> 本文档由 [README.md](README.md) 的同版本英文原文翻译而来；上游项目：<https://github.com/ferloom/Wireless-Device-Battery-Monitor>。
 
-| File | |
+## 下载
+
+| 文件 | 说明 |
 |---|---|
-| `BatteryHub-Taskbar-Setup-v1.6.exe` | Setup: Install / Update / Uninstall |
-| `SHA256SUMS.txt` | Checksum |
+| `BatteryHub-Taskbar-Setup-v1.6.exe` | 安装程序：安装 / 更新 / 卸载 |
+| `SHA256SUMS.txt` | 校验和 |
 
-Already installed? Use *Check for updates...* in the right-click menu (v1.1 and later), or run the new setup and click **Update**. Your settings and autostart choice are kept.
+已经装好了？在右键菜单里用 *检查更新...*（v1.1 起），或者运行新的安装程序并点击 **更新**。你的设置和开机启动选择都会保留。
 
-## New in v1.6
+## v1.6 新增
 
-- **New devices:** Logitech G PRO X 2 LIGHTSPEED (#112) and G321 (#107), Razer Nari (#110), Corsair Virtuoso XT (#118) and HS80 MAX (#121), HyperX Cloud Alpha Wireless (#116), ASUS ROG Pelta (#133), ATK N9 Pro / N9 Ultra (#115, #129), ATK Mercury I (#134), ATK F1 V2 8K dongle (#130), MCHOSE K99 V3 / G75 V2 keyboards (#123, #126), Endgame Gear XM2w / OP1w 4k (#128), Redragon 2.4G receivers (#109, and SinoWealth from NeroHole in #111).
-- **New setup** in a Windows 11 style window: install, update, reinstall, go back to any older release, and uninstall from Settings > Apps, keeping your settings and history unless you choose otherwise.
-- **Device dashboard** (right-click a device): 7-day chart with charging marked, charge and discharge sessions, battery life and time left.
-- **Battery history kept 7 days** and across restarts; nothing is made up where BatteryHub wasn't running.
-- **Rename devices** and get a **notification at 5%**; device menu with icons.
-- **Left or right taskbar** works (#127).
-- **Hover card about 10x lighter** on the CPU when moving between devices.
-- **Safer updates:** a release is installed only with a matching SHA-256 checksum.
+- **新支持的设备：** Logitech G PRO X 2 LIGHTSPEED（#112）和 G321（#107）、Razer Nari（#110）、Corsair Virtuoso XT（#118）和 HS80 MAX（#121）、HyperX Cloud Alpha Wireless（#116）、ASUS ROG Pelta（#133）、ATK N9 Pro / N9 Ultra（#115、#129）、ATK Mercury I（#134）、ATK F1 V2 8K 接收器（#130）、MCHOSE K99 V3 / G75 V2 键盘（#123、#126）、Endgame Gear XM2w / OP1w 4k（#128）、Redragon 2.4G 接收器（#109，以及 NeroHole 在 #111 中贡献的 SinoWealth）。
+- **全新安装程序**，Windows 11 风格的窗口：安装、更新、重新安装、回退到任意更旧的版本，以及从“设置 > 应用”卸载；除非你另有选择，否则设置和电量历史都会保留。
+- **设备仪表盘**（右键点击某个设备）：7 天的电量曲线并标出充电时段、充电与放电会话、电池续航和剩余时间。
+- **电量历史保留 7 天**，重启后依然存在；BatteryHub 没在运行时不会凭空补数据。
+- **重命名设备**，以及 **5% 时通知**；设备菜单带图标。
+- **左侧或右侧任务栏**都能用（#127）。
+- **悬停卡片**在设备之间移动时的 CPU 占用降低约 10 倍。
+- **更安全的更新：** 只有 SHA-256 校验和匹配的发布才会被安装。
 
-## New in v1.5
+## v1.5 新增
 
-- **About 40 newly supported devices** from your requests: HyperX (Cloud III S, Cloud II Core, Cloud Flight, Stinger Core), Razer BlackShark V2 Pro and Barracuda X Chroma, Corsair HS70 Pro, Logitech G533, Jabra Link 390, BenQ ZOWIE, Keychron Link, Flydigi Apex 6, and many AULA, MCHOSE, ATK, VXE, LAMZU, Scyrox, VGN, AJAZZ, EWEADN, Epomaker, Darmoshark and Delux mice and keyboards. Full list in the README, plus a list of devices that can't be supported and why.
-- **Logitech receivers work without G HUB** (#41).
-- **Other monitors:** the widget sits right next to each taskbar's clock and appears on all taskbars at once.
-- **New option:** show as notification-area icons that Windows arranges (drag between other tray icons, no overlap with other widgets).
-- **Hover card** with the device's level and a chart of the last 24 hours (kept for 24 hours only).
-- **Shares the taskbar:** sits left of other programs' taskbar widgets instead of on top.
-- **Contributions:** FNATIC BOLT (#48) and HyperX Cloud Flight tested on hardware (#93).
-- **Hover highlight** like the taskbar's buttons, **only one copy** can run, and **less memory** (about 0.1–0.2 MB most of the time).
+- **根据大家的请求新增约 40 款设备：** HyperX（Cloud III S、Cloud II Core、Cloud Flight、Stinger Core）、Razer BlackShark V2 Pro 和 Barracuda X Chroma、Corsair HS70 Pro、Logitech G533、Jabra Link 390、BenQ ZOWIE、Keychron Link、Flydigi Apex 6，以及大量 AULA、MCHOSE、ATK、VXE、LAMZU、Scyrox、VGN、AJAZZ、EWEADN、Epomaker、Darmoshark 和 Delux 的鼠标与键盘。完整列表见 README，另有“无法支持的设备及原因”清单。
+- **Logitech 接收器无需 G HUB** 也能读取（#41）。
+- **多显示器：** 小部件紧贴每个任务栏的时钟显示，并同时出现在所有任务栏上。
+- **新选项：** 显示为由 Windows 排列的通知区域图标（可以在其他托盘图标之间拖动，不会与其他小部件重叠）。
+- **悬停卡片：** 显示设备电量，以及最近 24 小时的曲线（历史只保留 24 小时）。
+- **与其他任务栏小部件共存：** 排在其他程序的任务栏小部件左侧，而不是盖在它上面。
+- **社区贡献：** FNATIC BOLT（#48）和 HyperX Cloud Flight（#93）已在真机上测试。
+- **悬停高亮**与任务栏按钮一致，**只允许运行一份**，并且**内存更省**（大多数时候约 0.1–0.2 MB）。
 
-## New in v1.4.1
+## v1.4.1 新增
 
-- Built with the Rust 2024 edition (was 2021). No change in behaviour.
+- 改用 Rust 2024 edition 构建（原为 2021）。行为没有变化。
 
-## New in v1.4
+## v1.4 新增
 
-- **Install updates silently** (menu, with the automatic check): new versions install in the background without asking or showing anything.
-- **Razer BlackShark V3** also over its USB cable.
+- **静默安装更新**（菜单项，配合自动检查）：新版本在后台安装，不询问、不显示任何界面。
+- **Razer BlackShark V3** 也能通过 USB 线缆读取。
 
-## New in v1.3.4
+## v1.3.4 新增
 
-- **WLMOUSE** Beast X / Mini / Mini Pro / Max mice.
-- **Razer BlackShark V3** headset over its HyperSpeed dongle.
+- **WLMOUSE** Beast X / Mini / Mini Pro / Max 鼠标。
+- **Razer BlackShark V3** 耳机通过其 HyperSpeed 接收器读取。
 
-## New in v1.3.3
+## v1.3.3 新增
 
-- **Attack Shark mice:** fixed the mouse not showing up (e.g. X1); now also shows when it is on power.
-- **`--listen VID:PID`** diagnostic: records what a device sends, for device requests.
+- **Attack Shark 鼠标：** 修复鼠标不显示的问题（例如 X1）；现在也会显示它是否已接电。
+- **`--listen VID:PID`** 诊断命令：记录设备发出的报文，用于提交设备支持请求。
 
-## New in v1.3.2
+## v1.3.2 新增
 
-- **Attack Shark mice** (e.g. X1) on the Xenta 2.4 GHz receiver (1D57:FA60): battery level and *Charging*, shown as asleep while the mouse is off. Protocol from [Attack Shark Battery KDE](https://gitlab.com/gabriel17166/Attack-Shark-Battery-KDE) by Gabriel Marques Ferrarezi (MIT). Not yet confirmed on hardware under Windows; please report in [#2](https://github.com/ferloom/Wireless-Device-Battery-Monitor/issues/2) whether it works for you.
+- **Attack Shark 鼠标**（例如 X1）通过 Xenta 2.4 GHz 接收器（1D57:FA60）读取：电量与*充电中*状态，鼠标关闭时显示为休眠。协议来自 Gabriel Marques Ferrarezi 的 [Attack Shark Battery KDE](https://gitlab.com/gabriel17166/Attack-Shark-Battery-KDE)（MIT）。尚未在 Windows 下的真机确认，欢迎在 [#2](https://github.com/ferloom/Wireless-Device-Battery-Monitor/issues/2) 反馈是否可用。
 
-## Fixed in v1.3.1
+## v1.3.1 修复
 
-- **Request support for a device:** the issue it opens showed the version as `vv1.3`; it now says `v1.3.1`.
+- **请求支持某个设备：** 它打开的 issue 里版本显示成 `vv1.3`；现在正确显示为 `v1.3.1`。
 
-## New in v1.3
+## v1.3 新增
 
-- **New black-and-white icon** for the program, the setup and the shortcuts.
-- **Position on the taskbar** now moves the widget in 20 px steps (20 to 200 px).
-- **Height on the taskbar:** new menu to move the widget 5 / 10 / 15 px up or down.
-- **Listed in Settings → Apps:** BatteryHub now shows up under *Installed apps* with its version, and *Uninstall* there removes it cleanly. The setup keeps a copy of itself in the program folder for this. This also prepares BatteryHub for winget.
-- **No Visual C++ Redistributable needed:** the program and the setup now start on a clean Windows. Before, they needed `VCRUNTIME140.dll`, which most PCs have but some don't.
-- **Faster automatic update check:** about 2 s after start instead of 20 s. If the network is not up yet (e.g. right after sign-in), it tries again every 15 s, up to 8 times.
+- **新的黑白图标**，用于程序、安装程序和快捷方式。
+- **任务栏上的位置**现在以 20 像素为步进移动小部件（20 到 200 像素）。
+- **任务栏上的高度：** 新菜单，可把小部件上移或下移 5 / 10 / 15 像素。
+- **出现在“设置 → 应用”中：** BatteryHub 现在会以带版本号的形式列在*已安装的应用*里，在那里点击*卸载*即可干净移除。安装程序为此会在程序目录里保留一份自己的副本。这也为 BatteryHub 上架 winget 做好了准备。
+- **不再需要 Visual C++ Redistributable：** 程序与安装程序现在可以在全新安装的 Windows 上启动。此前它们需要 `VCRUNTIME140.dll`，大多数电脑有，但有些没有。
+- **更快的自动更新检查：** 启动后约 2 秒（原为 20 秒）。如果网络还没就绪（例如刚登录），会每 15 秒重试一次，最多 8 次。
 
-## New in v1.2.2
+## v1.2.2 新增
 
-- **Update finished:** after an update (from the menu or with the setup), BatteryHub says once which version it was updated from and to.
-- **No flash on the main taskbar** at start-up when the widget is set to show only on another monitor.
+- **更新完成提示：** 更新之后（无论从菜单还是用安装程序），BatteryHub 会提示一次从哪个版本更新到了哪个版本。
+- **主任务栏不再闪一下：** 当小部件设置为只在另一台显示器上显示时，启动时主任务栏不会再闪一下。
 
-## New in v1.2.1
+## v1.2.1 新增
 
-- **Show widget on** (right-click menu, with more than one monitor), like the original: *All monitors*, *Main monitor only*, or *Display 2 (left) only* for any other monitor. The monitor is remembered by its identity; while it is unplugged, the widget is on the main taskbar.
-- **Position on the taskbar:** next to the notification area or 40 / 80 / 120 / 160 / 200 px from it, to make room for other taskbar widgets (e.g. an iCUE sensor).
-- **Background behind taskbar text (for translucent taskbars):** optional rounded plate in the taskbar's colour, off by default.
+- **小部件显示在**（右键菜单，多显示器时出现），与原版一致：*所有显示器*、*仅主显示器*，或任意其他显示器的 *仅显示器 2（左侧）*。显示器按其身份记忆，不在连接状态时小部件显示在主任务栏上。
+- **任务栏上的位置：** 紧邻通知区域，或距其 40 / 80 / 120 / 160 / 200 像素，为其他任务栏小部件（例如 iCUE 传感器）让出空间。
+- **任务栏文字底层背景（用于半透明任务栏）：** 可选的圆角底板，使用任务栏颜色，默认关闭。
 
-## New in v1.2
+## v1.2 新增
 
-- **ROCCAT Syn Max Air** headset (1E7D:3A3F) over its 2.4 GHz receiver: level from the battery voltage, *Charging* / *Full* on the dock, disappears when switched off. Contributed by [BrooklynBanana](https://github.com/BrooklynBanana). ROCCAT Swarm must not run at the same time (it holds the receiver).
-- **Request support for a device...** (right-click menu): lists every device BatteryHub can see (HID, USB, Bluetooth). Pick the one that is not shown, check its name and type, add notes, and *Send* opens a GitHub issue in your browser, filled in with exactly what the window shows (name, type, notes, vendor / product id, HID and USB interface summary, Windows build). You submit it there; nothing is sent from the app. *Copy full report* copies the same plus the list of all devices. Also `batteryhub-taskbar.exe --report`. Light or dark, following the Windows app theme.
-- **Automatically start with Windows** (menu): switch the autostart entry on or off without the setup.
-- **Automatically check for updates** (menu, off by default): checks once when BatteryHub starts and, if there is a new version, asks whether to update.
-- **Shorter tooltip:** `PRO 2 LIGHTSPEED: 96%` (plus charging / full / asleep).
-- **Setup:** the autostart line shows the registry entry (`HKCU\...\Run\BatteryHub Taskbar`) instead of the program path.
+- **ROCCAT Syn Max Air** 耳机（1E7D:3A3F）通过其 2.4 GHz 接收器读取：电量由电池电压推算，放在充电座上时显示*充电中* / *已充满*，关闭后消失。由 [BrooklynBanana](https://github.com/BrooklynBanana) 贡献。ROCCAT Swarm 不能同时运行（它会占用接收器）。
+- **请求支持某个设备...**（右键菜单）：列出 BatteryHub 能看到的所有设备（HID、USB、蓝牙）。选择没有显示出来的那个，核对名称和类型，加上备注，然后*发送*会在浏览器中打开一个 GitHub issue，内容与窗口显示的完全一致（名称、类型、备注、厂商 / 产品 ID、HID 与 USB 接口摘要、Windows 版本号）。由你在那里提交，程序本身不会发送任何内容。*复制完整报告*会复制同样的内容，外加所有设备的列表。也可以使用 `batteryhub-taskbar.exe --report`。界面跟随 Windows 应用的浅色/深色主题。
+- **随 Windows 自动启动**（菜单）：不用安装程序即可开、关开机启动项。
+- **自动检查更新**（菜单，默认关闭）：BatteryHub 启动时检查一次，若有新版本会询问是否更新。
+- **更短的提示文字：** `PRO 2 LIGHTSPEED: 96%`（另加充电中 / 已充满 / 休眠）。
+- **安装程序：** 开机启动那一行现在显示注册表项（`HKCU\...\Run\BatteryHub Taskbar`），而不是程序路径。
 
 ## v1.1
 
-- **Check for updates** (right-click menu): asks GitHub for the latest release and shows "No new updates" or "A new update is available: v1.1 -> v1.x - update now?". On *Yes* the setup is downloaded, verified against the release's SHA-256 checksum and started; it updates and restarts BatteryHub.
-- **About 0.2 MB of RAM when idle** (Task Manager "Memory" column; was about 1.1 MB): memory that is only needed for a moment is handed back to Windows after every read and Bluetooth check, and settings are cached instead of read from the registry every second.
-- **Setup:** when it is done (install, update, uninstall or exit), it thanks you, links to the project for a star and closes itself after 5 seconds. On an error it stays open.
+- **检查更新**（右键菜单）：向 GitHub 查询最新发布，并显示“没有新更新”或“有新更新可用：v1.1 -> v1.x - 现在更新吗？”。选择*是*后会下载安装程序、用该发布的 SHA-256 校验和核对后启动；它会更新并重启 BatteryHub。
+- **空闲时约 0.2 MB 内存**（任务管理器的“内存”列；原来约 1.1 MB）：只在某一刻需要的内存会在每次读取和蓝牙检查之后交还 Windows，设置改为缓存，而不是每秒从注册表读取。
+- **安装程序：** 完成时（安装、更新、卸载或退出）会向你道谢、给出项目链接（欢迎点星）并在 5 秒后自动关闭；出错时则保持打开。
 
-## Fixes since v1.0 (v1.0.1 / v1.0.1.1)
+## v1.0 之后的修复（v1.0.1 / v1.0.1.1）
 
-- Unplugged receiver / cable: its device disappears at once instead of showing "asleep".
-- Bluetooth devices (AirPods...) disappear / appear right when they disconnect / connect; AirPods only while connected to this PC.
-- Headsets switched on or off on a 2.4 GHz dongle, and mice waking up behind a receiver, show within ~10 s.
-- No duplicate, garbled strip after an Explorer restart (seen on the small Windows 10 taskbar of ExplorerPatcher).
-- Safe fallback to notification-area icons on a vertical taskbar or an unknown Explorer layout; unit tests and CI.
+- 拔掉接收器 / 线缆：对应设备立刻消失，而不是显示“休眠”。
+- 蓝牙设备（AirPods 等）断开 / 连接时立即消失 / 出现；AirPods 只在连接本机时显示。
+- 2.4 GHz 接收器上的耳机开机或关机、接收器后方的鼠标唤醒，约 10 秒内显示。
+- 资源管理器重启后不再出现重复或错乱的电量条（在 ExplorerPatcher 的小任务栏上出现过）。
+- 在垂直任务栏或未知的资源管理器布局下，安全回退到通知区域图标；包含单元测试与 CI。
 
-Windows may show a SmartScreen warning because the file is not code-signed: click *More info* -> *Run anyway*.
+由于文件未做代码签名，Windows 可能会显示 SmartScreen 警告：点击*更多信息* → *仍要运行*。

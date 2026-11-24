@@ -92,7 +92,7 @@ pub fn poll(ctx: &mut PollContext) {
             key: format!("corsair:{}", hex4(pid)),
             name: name(c, pid),
             kind: DeviceKind::Headset,
-            via: "2.4 GHz receiver".into(),
+            via: "2.4 GHz 接收器".into(),
             hw: Some((vid, pid)),
             grace_sec: 60,
             ..Default::default()

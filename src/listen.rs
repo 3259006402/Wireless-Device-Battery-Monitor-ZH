@@ -27,7 +27,7 @@ fn label(c: &HidColl) -> String {
 }
 
 fn message(text: &str, flags: windows::Win32::UI::WindowsAndMessaging::MESSAGEBOX_STYLE) -> bool {
-    unsafe { MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("BatteryHub - listen"), flags) == IDOK }
+    unsafe { MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("BatteryHub - 监听"), flags) == IDOK }
 }
 
 fn desktop_dir() -> std::path::PathBuf {
@@ -49,10 +49,10 @@ pub fn listen(vid: u16, pid: u16, ms: u64) -> String {
     let _ = writeln!(out, "BatteryHub {} listen {}:{}", crate::install::version_label(), hex4(vid), hex4(pid));
     let colls: Vec<HidColl> = hid::enum_hid().into_iter().filter(|c| c.vid == vid && c.pid == pid).collect();
     if colls.is_empty() {
-        let _ = writeln!(out, "No HID collections of this device found. Is the receiver plugged in?");
+        let _ = writeln!(out, "没有找到该设备的 HID 集合。接收器插好了吗？");
         return out;
     }
-    let _ = writeln!(out, "Product string: {}", hid::product_string(&colls[0]));
+    let _ = writeln!(out, "产品字符串：{}", hid::product_string(&colls[0]));
     let (tx, rx) = mpsc::channel::<(usize, u128, Vec<u8>)>();
     let start = Instant::now();
     let mut threads = Vec::new();
@@ -100,7 +100,7 @@ pub fn listen(vid: u16, pid: u16, ms: u64) -> String {
             }
             None => {
                 let e = unsafe { GetLastError() };
-                let _ = writeln!(out, "  cannot open for reading (error {})", e.0);
+                let _ = writeln!(out, "  无法以读取方式打开（错误 {}）", e.0);
             }
         }
     }
@@ -108,7 +108,7 @@ pub fn listen(vid: u16, pid: u16, ms: u64) -> String {
     for t in threads {
         let _ = t.join();
     }
-    let _ = writeln!(out, "\nInput reports pushed in {} s (collection, ms, bytes):", ms / 1000);
+    let _ = writeln!(out, "\n{} 秒内推送的输入报告（集合、毫秒、字节）：", ms / 1000);
     let mut any = false;
     for (i, t, r) in rx.try_iter() {
         any = true;
@@ -129,11 +129,11 @@ pub fn parse_vid_pid(s: &str) -> Option<(u16, u16)> {
 /// The `--listen` entry point with its two message boxes.
 pub fn run(arg: Option<&str>) {
     let Some((vid, pid)) = arg.and_then(parse_vid_pid) else {
-        message("Usage: batteryhub-taskbar.exe --listen VID:PID   (e.g. --listen 1D57:FA60)", MB_OK | MB_ICONINFORMATION);
+        message("用法：batteryhub-taskbar.exe --listen VID:PID   （例如 --listen 1D57:FA60）", MB_OK | MB_ICONINFORMATION);
         return;
     };
     let text = format!(
-        "BatteryHub will now listen to {}:{} for {} seconds.\n\nClick OK, then move the mouse / use the device the whole time. With a mouse, also try plugging and unplugging its charging cable.",
+        "BatteryHub 现在开始监听 {}:{}，持续 {} 秒。\n\n点击“确定”，然后在这段时间里持续移动鼠标或使用设备。如果是鼠标，也可以试着反复插拔它的充电线。",
         hex4(vid),
         hex4(pid),
         LISTEN_MS / 1000
@@ -147,7 +147,7 @@ pub fn run(arg: Option<&str>) {
     if std::fs::write(&path, report).is_ok() {
         let _ = std::process::Command::new("notepad.exe").arg(&path).spawn();
     } else {
-        message("Could not write the result file.", MB_OK | MB_ICONINFORMATION);
+        message("无法写入结果文件。", MB_OK | MB_ICONINFORMATION);
     }
 }
 

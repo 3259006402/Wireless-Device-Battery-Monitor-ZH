@@ -102,7 +102,7 @@ pub fn poll(ctx: &mut PollContext) {
                 key: format!("rongyuan:{}:{}:{}", hex4(vid), hex4(pid), if keyboard { "kb" } else { "ms" }),
                 name: name(&product, keyboard),
                 kind: if keyboard { DeviceKind::Keyboard } else { DeviceKind::Mouse },
-                via: "2.4 GHz receiver".into(),
+                via: "2.4 GHz 接收器".into(),
                 percent: level as i32,
                 vid,
                 hw: Some((vid, pid)),

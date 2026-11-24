@@ -90,7 +90,7 @@ pub fn poll(ctx: &mut PollContext) {
         key: "razer:nari:051c".into(),
         name: "Razer Nari".into(),
         kind: DeviceKind::Headset,
-        via: "2.4 GHz dongle".into(),
+        via: "2.4 GHz 接收器".into(),
         hw: Some((VID, PID)),
         grace_sec: 120,
         ..Default::default()

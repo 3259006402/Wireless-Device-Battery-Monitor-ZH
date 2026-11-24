@@ -202,17 +202,17 @@ pub fn apps_values(ed: &Edition, dir: &Path, exe: &Path, setup: &Path, version: 
 /// Apps (name, version, publisher, icon, folder, uninstall commands, size).
 fn register_app(ed: &Edition, log: &Log, dir: &Path, exe: &Path, created: &mut Vec<String>) -> Result<(), String> {
     let setup = dir.join(SETUP_COPY);
-    let me = std::env::current_exe().map_err(|e| format!("cannot find this setup's own file: {e}"))?;
+    let me = std::env::current_exe().map_err(|e| format!("找不到本安装程序自己的文件：{e}"))?;
     if same_file(&me, &setup) {
-        log.detail(format!("running from {}", setup.display()));
+        log.detail(format!("运行于 {}", setup.display()));
     } else {
-        let bytes = std::fs::read(&me).map_err(|e| format!("cannot read this setup: {e}"))?;
+        let bytes = std::fs::read(&me).map_err(|e| format!("无法读取本安装程序：{e}"))?;
         inst::install_file(&setup, &bytes, log, &|_| {})?;
         created.push(format!("setup     {}", setup.display()));
     }
     let key = apps_key(ed);
     log.info(format!("Registering in Settings > Apps: HKCU\\{key}"));
-    let k = inst::create(HKCU, &key).ok_or("cannot create the Settings > Apps entry")?;
+    let k = inst::create(HKCU, &key).ok_or("无法创建“设置 > 应用”条目")?;
     let (y, m, d, _, _) = civil(SystemTime::now());
     for (n, v) in apps_values(ed, dir, exe, &setup, inst::VERSION, &format!("{y:04}{m:02}{d:02}")) {
         if k.set_string(n, &v) {
@@ -241,7 +241,7 @@ fn save_info(ed: &Edition, log: &Log, dir: &Path, created: &mut Vec<String>) {
             }
             created.push(format!("registry  HKCU\\{}", ed.settings_key));
         }
-        None => log.warn("Could not save install information."),
+        None => log.warn("无法保存安装信息。"),
     }
 }
 
@@ -255,17 +255,17 @@ fn shortcut(log: &Log, lnk: &Path, exe: &Path, want: bool, description: &str, cr
                 log.ok(format!("{} -> {}", lnk.display(), exe.display()));
                 created.push(format!("shortcut  {}", lnk.display()));
             }
-            Err(e) => log.warn(format!("Could not create {}: {e}", lnk.display())),
+            Err(e) => log.warn(format!("无法创建 {}：{e}", lnk.display())),
         }
     } else if lnk.exists() && std::fs::remove_file(lnk).is_ok() {
-        log.ok(format!("Removed {} (not wanted)", lnk.display()));
+        log.ok(format!("已删除 {}（不需要）", lnk.display()));
     }
 }
 
 fn set_autostart(ed: &Edition, log: &Log, exe: &Path, on: bool, created: &mut Vec<String>) {
     let Some(name) = ed.run_value else { return };
     let Some(run) = inst::open(HKCU, inst::RUN_KEY, true).or_else(|| inst::create(HKCU, inst::RUN_KEY)) else {
-        log.error("Cannot open the autostart registry key.");
+        log.error("无法打开开机启动的注册表项。");
         return;
     };
     if on {
@@ -278,12 +278,12 @@ fn set_autostart(ed: &Edition, log: &Log, exe: &Path, on: bool, created: &mut Ve
         if let Some(sa) = inst::open(HKCU, inst::STARTUP_APPROVED_KEY, true)
             && sa.delete_value(name)
         {
-            log.detail("cleared an old Task Manager 'disabled' state");
+            log.detail("清除了任务管理器中旧的“已禁用”状态");
         }
     } else if run.delete_value(name) {
-        log.ok("Autostart off: removed the autostart entry.");
+        log.ok("已关闭开机启动：删除了启动项。");
     } else {
-        log.ok("Autostart off.");
+        log.ok("已关闭开机启动。");
     }
 }
 
@@ -296,8 +296,8 @@ pub fn launch(ed: &Edition, log: &Log, exe: &Path) {
         .stderr(Stdio::null())
         .spawn()
     {
-        Ok(c) => log.ok(format!("{} started (process id {}).", ed.name, c.id())),
-        Err(e) => log.error(format!("Could not start {}: {e}", ed.name)),
+        Ok(c) => log.ok(format!("{} 已启动（进程 ID {}）。", ed.name, c.id())),
+        Err(e) => log.error(format!("无法启动 {}：{e}", ed.name)),
     }
 }
 
@@ -308,44 +308,44 @@ pub fn launch(ed: &Edition, log: &Log, exe: &Path) {
 pub fn install(ed: &Edition, payload: &[u8], log: &Log, st: &State, c: &Choices, progress: Progress) -> Result<Vec<String>, String> {
     let mut created = Vec::new();
     let what = match plan(st) {
-        Plan::Install => "Installing".to_string(),
-        Plan::Update(v) => format!("Updating from v{v}"),
-        Plan::Reinstall => "Reinstalling".to_string(),
-        Plan::Downgrade(v) => format!("Going back from v{v}"),
+        Plan::Install => "正在安装".to_string(),
+        Plan::Update(v) => format!("正在从 v{v} 更新"),
+        Plan::Reinstall => "正在重新安装".to_string(),
+        Plan::Downgrade(v) => format!("正在从 v{v} 回退"),
     };
     log.step(format!("{what}: {} v{}", ed.name, inst::VERSION));
-    progress(0.02, "Closing BatteryHub if it is running");
+    progress(0.02, "如果 BatteryHub 正在运行，先关闭它");
     let dir = if st.installed { st.dir.clone() } else { ed.default_dir() };
     let exe = dir.join(ed.exe);
     let was_running = inst::stop_running(ed, &exe, log);
 
-    progress(0.12, "Preparing the install folder");
+    progress(0.12, "准备安装文件夹");
     if !dir.exists() {
-        std::fs::create_dir_all(&dir).map_err(|e| format!("Cannot create {}: {e}", dir.display()))?;
+        std::fs::create_dir_all(&dir).map_err(|e| format!("无法创建 {}：{e}", dir.display()))?;
         log.ok(format!("Created {}", dir.display()));
     }
 
-    progress(0.15, "Installing the program file");
-    log.detail(format!("start menu shortcut before: {}, desktop shortcut before: {}", st.start_menu, st.desktop));
+    progress(0.15, "安装程序文件");
+    log.detail(format!("开始菜单快捷方式原本：{}，桌面快捷方式原本：{}", st.start_menu, st.desktop));
     if st.installed {
         log.detail(format!("old: {} (v{})", exe.display(), st.version.as_deref().unwrap_or("?")));
     }
-    inst::install_file(&exe, payload, log, &|f| progress(0.15 + 0.5 * f, "Installing the program file"))?;
+    inst::install_file(&exe, payload, log, &|f| progress(0.15 + 0.5 * f, "安装程序文件"))?;
     created.push(format!("program   {}", exe.display()));
 
-    progress(0.68, "Registering BatteryHub in Windows Settings");
+    progress(0.68, "在 Windows 设置中注册 BatteryHub");
     save_info(ed, log, &dir, &mut created);
     register_app(ed, log, &dir, &exe, &mut created)?;
 
-    progress(0.85, "Creating shortcuts");
+    progress(0.85, "创建快捷方式");
     shortcut(log, &ed.start_menu_shortcut(), &exe, c.start_menu, ed.description, &mut created);
     shortcut(log, &ed.desktop_shortcut(), &exe, c.desktop, ed.description, &mut created);
 
-    progress(0.93, "Setting up autostart");
+    progress(0.93, "设置开机启动");
     set_autostart(ed, log, &exe, c.autostart, &mut created);
 
     if c.launch || was_running {
-        progress(0.97, "Starting BatteryHub");
+        progress(0.97, "启动 BatteryHub");
         // The updated program says "Update finished: vOLD -> vNEW" once when it starts.
         if let (true, Some(old), Some(k)) = (c.notify, &st.version, inst::create(HKCU, ed.settings_key))
             && old != inst::VERSION
@@ -354,7 +354,7 @@ pub fn install(ed: &Edition, payload: &[u8], log: &Log, st: &State, c: &Choices,
         }
         launch(ed, log, &exe);
     }
-    progress(1.0, "Done");
+    progress(1.0, "完成");
     Ok(created)
 }
 
@@ -363,11 +363,11 @@ pub fn install(ed: &Edition, payload: &[u8], log: &Log, st: &State, c: &Choices,
 /// with the current choices. Its own setup then writes the program, the Settings > Apps entry
 /// (same key, so no duplicate) and the shortcuts; settings and history are kept.
 pub fn install_release(log: &Log, r: &batteryhub::update::Release, c: &Choices, progress: Progress) -> Result<(), String> {
-    log.step(format!("Installing v{} from GitHub", r.version));
-    progress(0.05, &format!("Downloading v{}", r.version));
+    log.step(format!("正在从 GitHub 安装 v{}", r.version));
+    progress(0.05, &format!("正在下载 v{}", r.version));
     let setup = batteryhub::update::download(r)?;
-    log.ok(format!("Downloaded and verified {}", setup.path.display()));
-    progress(0.45, &format!("Running the setup of v{}", r.version));
+    log.ok(format!("已下载并校验 {}", setup.path.display()));
+    progress(0.45, &format!("正在运行 v{} 的安装程序", r.version));
     let yes = |b: bool| if b { "yes" } else { "no" };
     let mut args =
         vec!["/install".to_string(), "/S".into(), format!("/autostart={}", yes(c.autostart)), format!("/desktop={}", yes(c.desktop)), "/nonotify".into()];
@@ -379,7 +379,7 @@ pub fn install_release(log: &Log, r: &batteryhub::update::Release, c: &Choices, 
     let mut child = {
         use std::os::windows::process::CommandExt;
         // The file stays locked against changes until the process has started.
-        let child = std::process::Command::new(&path).args(&args).creation_flags(0x0800_0000).spawn().map_err(|e| format!("Could not start the setup: {e}"))?;
+        let child = std::process::Command::new(&path).args(&args).creation_flags(0x0800_0000).spawn().map_err(|e| format!("无法启动安装程序：{e}"))?;
         drop(setup);
         child
     };
@@ -389,9 +389,9 @@ pub fn install_release(log: &Log, r: &batteryhub::update::Release, c: &Choices, 
         let _ = std::fs::remove_dir(dir);
     }
     if !status.success() {
-        return Err(format!("The setup of v{} reported an error (exit code {:?}).", r.version, status.code()));
+        return Err(format!("v{} 的安装程序报告了错误（退出码 {:?}）。", r.version, status.code()));
     }
-    progress(1.0, "Done");
+    progress(1.0, "完成");
     Ok(())
 }
 
@@ -420,7 +420,7 @@ fn scan_autostart(ed: &Edition, log: &Log, dir: &Path, removed: &mut Vec<String>
                     removed.push(format!("autostart {where_}\\{name}"));
                 }
                 _ => {
-                    let e = format!("Cannot remove \"{name}\" from {where_}{}", if hive == HKLM { " (needs administrator rights)" } else { "" });
+                    let e = format!("Cannot remove \"{name}\" from {where_}{}", if hive == HKLM { " （需要管理员权限）" } else { "" });
                     log.error(&e);
                     errors.push(e);
                 }
@@ -441,7 +441,7 @@ fn scan_autostart(ed: &Edition, log: &Log, dir: &Path, removed: &mut Vec<String>
             if starts_edition(ed, dir, "", &text) {
                 match std::fs::remove_file(e.path()) {
                     Ok(_) => removed.push(format!("shortcut  {}", e.path().display())),
-                    Err(err) => errors.push(format!("Could not delete {}: {err}", e.path().display())),
+                    Err(err) => errors.push(format!("无法删除 {}：{err}", e.path().display())),
                 }
             }
         }
@@ -461,14 +461,14 @@ fn remove_file(log: &Log, p: &Path, removed: &mut Vec<String>, label: &str) -> R
         }
         std::thread::sleep(std::time::Duration::from_millis(150));
     }
-    let e = format!("Could not delete {}", p.display());
+    let e = format!("无法删除 {}", p.display());
     log.error(&e);
     Err(e)
 }
 
 fn remove_dir_if_empty(log: &Log, p: &Path, removed: &mut Vec<String>) {
     if p.exists() && std::fs::remove_dir(p).is_ok() {
-        log.ok(format!("Removed empty folder {}", p.display()));
+        log.ok(format!("已删除空文件夹 {}", p.display()));
         removed.push(format!("folder    {}", p.display()));
     }
 }
@@ -493,10 +493,10 @@ fn unregister_app(ed: &Edition, log: &Log, dir: &Path, removed: &mut Vec<String>
         // CREATE_NO_WINDOW | DETACHED_PROCESS
         match std::process::Command::new("cmd").arg("/c").raw_arg(&cmd).creation_flags(0x0800_0000 | 0x0000_0008).spawn() {
             Ok(_) => {
-                log.ok(format!("{} will be deleted a few seconds after this window closes", setup.display()));
+                log.ok(format!("{} 将在本窗口关闭几秒后被删除", setup.display()));
                 removed.push(format!("setup     {}", setup.display()));
             }
-            Err(e) => log.warn(format!("Could not schedule deleting {}: {e}", setup.display())),
+            Err(e) => log.warn(format!("无法安排删除 {}：{e}", setup.display())),
         }
     } else {
         let _ = remove_file(log, &setup, removed, "setup    ");
@@ -530,7 +530,7 @@ fn remove_legacy(log: &Log, removed: &mut Vec<String>) {
     if old_lnk.exists() && std::fs::remove_file(&old_lnk).is_ok() {
         removed.push(format!("shortcut  {}", old_lnk.display()));
     }
-    log.detail("checked old test-build leftovers");
+    log.detail("已检查旧测试版本残留");
 }
 
 /// Uninstalls: stops the program, removes its files, shortcuts, autostart and the Settings > Apps
@@ -540,17 +540,17 @@ fn remove_legacy(log: &Log, removed: &mut Vec<String>) {
 pub fn uninstall(ed: &Edition, log: &Log, st: &State, purge: bool, progress: Progress) -> Result<Vec<String>, String> {
     let mut removed = Vec::new();
     let mut errors: Vec<String> = Vec::new();
-    log.step(format!("Uninstalling {}", ed.name));
-    progress(0.05, "Closing BatteryHub");
+    log.step(format!("正在卸载 {}", ed.name));
+    progress(0.05, "正在关闭 BatteryHub");
     inst::stop_running(ed, &st.exe, log);
     if !inst::processes_running(&st.exe).is_empty() {
-        errors.push("BatteryHub is still running and could not be closed.".into());
+        errors.push("BatteryHub 仍在运行，无法关闭。".into());
     }
 
-    progress(0.25, "Removing autostart entries");
+    progress(0.25, "正在删除开机启动项");
     errors.extend(scan_autostart(ed, log, &st.dir, &mut removed));
 
-    progress(0.4, "Removing shortcuts");
+    progress(0.4, "正在删除快捷方式");
     for lnk in [ed.desktop_shortcut(), ed.start_menu_shortcut()] {
         if let Err(e) = remove_file(log, &lnk, &mut removed, "shortcut ") {
             errors.push(e);
@@ -558,7 +558,7 @@ pub fn uninstall(ed: &Edition, log: &Log, st: &State, purge: bool, progress: Pro
     }
     remove_dir_if_empty(log, &Edition::start_menu_folder(), &mut removed);
 
-    progress(0.55, "Removing program files");
+    progress(0.55, "正在删除程序文件");
     if let Err(e) = remove_file(log, &st.exe, &mut removed, "program  ") {
         errors.push(e);
     }
@@ -566,7 +566,7 @@ pub fn uninstall(ed: &Edition, log: &Log, st: &State, purge: bool, progress: Pro
     remove_dir_if_empty(log, &st.dir, &mut removed);
     remove_dir_if_empty(log, &Edition::root_dir(), &mut removed);
 
-    progress(0.75, if purge { "Removing settings and battery history" } else { "Keeping your settings and battery history" });
+    progress(0.75, if purge { "删除设置和电量历史" } else { "保留你的设置和电量历史" });
     if purge {
         if inst::open(HKCU, ed.settings_key, false).is_some() && inst::delete_tree(HKCU, ed.settings_key) {
             log.ok(format!("Deleted HKCU\\{}", ed.settings_key));
@@ -579,7 +579,7 @@ pub fn uninstall(ed: &Edition, log: &Log, st: &State, purge: bool, progress: Pro
                     log.ok(format!("Deleted {}", data.display()));
                     removed.push(format!("data      {}", data.display()));
                 }
-                Err(e) => errors.push(format!("Could not delete {}: {e}", data.display())),
+                Err(e) => errors.push(format!("无法删除 {}：{e}", data.display())),
             }
         }
         if let Some(parent) = data.parent() {
@@ -599,11 +599,11 @@ pub fn uninstall(ed: &Edition, log: &Log, st: &State, purge: bool, progress: Pro
         }
     }
 
-    progress(0.9, "Cleaning up");
+    progress(0.9, "正在清理");
     if ed.run_value.is_some() {
         remove_legacy(log, &mut removed);
     }
-    progress(1.0, "Done");
+    progress(1.0, "完成");
     if errors.is_empty() { Ok(removed) } else { Err(errors.join("\n")) }
 }
 
@@ -611,14 +611,14 @@ pub fn uninstall(ed: &Edition, log: &Log, st: &State, purge: bool, progress: Pro
 
 /// /S: no window; the exit code says whether it worked (details in the log file).
 pub fn run_silent(ed: &Edition, payload: &[u8], o: &Opts) -> i32 {
-    let log = Log::new(&format!("{} {} - Setup (silent)", ed.name, inst::version_label()), None);
+    let log = Log::new(&format!("{} {} - 安装程序（静默）", ed.name, inst::version_label()), None);
     let st = read_state(ed);
     let c = default_choices(&st, o);
     let none = |_: f32, _: &str| {};
     let r = match o.action {
         Some(Action::Uninstall) if !st.installed => Ok(Vec::new()),
         Some(Action::Uninstall) => uninstall(ed, &log, &st, o.purge, &none),
-        Some(Action::Update) if !st.installed => Err("Nothing to update: not installed.".into()),
+        Some(Action::Update) if !st.installed => Err("没有需要更新的内容：尚未安装。".into()),
         _ => install(ed, payload, &log, &st, &c, &none),
     };
     match r {
