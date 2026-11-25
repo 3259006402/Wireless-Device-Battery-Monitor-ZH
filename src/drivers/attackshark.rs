@@ -19,6 +19,11 @@
 //! state and level were seen twice in a row. No frame within the timeout means the mouse is off
 //! (the receiver stays enumerated). With the cable plugged in, the receiver goes silent.
 //!
+//! Some mice on this receiver report the level in tenths instead of percent: the GM3323D ("GM3323D"
+//! product string, model marker 00) sends `03 00 40 01 08` at 80 % charge (reported on hardware) -
+//! 08 out of 10, not 8 %. Such models are named in TENTHS and the byte is multiplied by 10; a frame
+//! that does carry 0..=100 anyway is still read as percent, so nothing is lost if a firmware differs.
+//!
 //! The same receiver family's 1D57:FA65 ("KP 8K") carries the Delux M900 Pro and Inphic IN10 mice
 //! with the same frames. Delux M900 Pro: event 40 (model 3D / 30) as documented by
 //! omarchy-delux-m900 (MIT, github.com/AeonArcHQ/omarchy-delux-m900, docs/re/findings.md, read off
@@ -40,12 +45,34 @@ const CHARGING: u8 = 0x03;
 /// Frames come about every 2 s; two matching ones are needed.
 const WAIT_MS: u64 = 5500;
 
+/// Models that report the level in tenths (0..=10) rather than percent, matched on the receiver's
+/// product string. GM3323D: `03 00 40 01 08` at 80 %.
+const TENTHS: &[&str] = &["GM3323D", "GM 3323D"];
+
 /// Decodes one input report (report ID included): Some((level, state)).
 pub fn decode(r: &[u8]) -> Option<(i32, u8)> {
     if r.len() < 5 || r[0] != 0x03 || (r[2] != 0x40 && r[2] != 0x41) || r[4] > 100 {
         return None;
     }
     Some((r[4] as i32, r[3]))
+}
+
+/// Whether this receiver's mouse reports tenths (level 8 = 80 %).
+pub fn reports_tenths(product: &str) -> bool {
+    let p = product.to_ascii_uppercase();
+    TENTHS.iter().any(|m| p.contains(m))
+}
+
+/// Raw level byte -> percent. Tenths models: 0..=10 means 0..=100 %; a frame with 0..=100 anyway is
+/// read as percent, so an unknown firmware variant cannot make the reading vanish.
+pub fn level_percent(tenths: bool, raw: u8) -> Option<i32> {
+    if raw > 100 {
+        return None;
+    }
+    if tenths && raw <= 10 {
+        return Some(i32::from(raw) * 10);
+    }
+    Some(i32::from(raw))
 }
 
 /// Name for a receiver and the model byte (byte 1) of its frames.
@@ -57,6 +84,13 @@ pub fn model_name(pid: u16, model: u8) -> &'static str {
         (RECEIVER_8K, _) => "Wireless mouse",
         _ => "Attack Shark mouse",
     }
+}
+
+/// The device's own product string ("GM3323D") when it says anything, the model table otherwise.
+fn display_name(pid: u16, model: Option<u8>, product: &str) -> String {
+    let p = product.trim();
+    let generic = p.is_empty() || p.to_lowercase().contains("receiver") || p.to_lowercase().contains("dongle") || p.to_lowercase().contains("2.4g");
+    if generic { model_name(pid, model.unwrap_or(0)).into() } else { p.to_string() }
 }
 
 /// Picks the reading from the frames seen during one poll: the first one confirmed by an equal
@@ -71,10 +105,10 @@ pub fn pick(frames: &[(i32, u8)]) -> Option<(i32, u8)> {
     }
 }
 
-fn base(pid: u16, model: Option<u8>) -> DeviceStatus {
+fn base(pid: u16, model: Option<u8>, product: &str) -> DeviceStatus {
     DeviceStatus {
         key: format!("attackshark:{}", hex4(pid)),
-        name: model_name(pid, model.unwrap_or(0)).into(),
+        name: display_name(pid, model, product),
         kind: DeviceKind::Mouse,
         via: "2.4 GHz 接收器".into(),
         hw: Some((VID, pid)),
@@ -83,8 +117,9 @@ fn base(pid: u16, model: Option<u8>) -> DeviceStatus {
     }
 }
 
-/// Some(((level, state), model byte of the last battery frame)).
-fn read_frames(d: &HidDev) -> Option<((i32, u8), u8)> {
+/// Some(((percent, state), model byte of the last battery frame)). `tenths`: the mouse reports
+/// tenths, so the byte is scaled to percent before two matching frames are compared.
+fn read_frames(d: &HidDev, tenths: bool) -> Option<((i32, u8), u8)> {
     let end = crate::util::Deadline::in_ms(WAIT_MS);
     let mut frames = Vec::new();
     let mut model = 0;
@@ -94,13 +129,14 @@ fn read_frames(d: &HidDev) -> Option<((i32, u8), u8)> {
             return pick(&frames).map(|f| (f, model));
         }
         let Some(r) = d.read(left) else { continue };
-        if let Some(f) = decode(&r) {
-            model = r[1];
-            if frames.last() == Some(&f) {
-                return Some((f, model)); // confirmed
-            }
-            frames.push(f);
+        let Some((raw, state)) = decode(&r) else { continue };
+        model = r[1];
+        let Some(percent) = level_percent(tenths, raw as u8) else { continue };
+        let f = (percent, state);
+        if frames.last() == Some(&f) {
+            return Some((f, model)); // confirmed
         }
+        frames.push(f);
     }
 }
 
@@ -115,10 +151,12 @@ pub fn poll(ctx: &mut PollContext) {
             continue;
         }
         colls.sort_by_key(|c| c.page() != 0x000A); // the status collection first
+        let product = crate::hid::product_string(&colls[0]);
+        let tenths = reports_tenths(&product);
         let mut found = None;
         for c in &colls {
             let Some(d) = HidDev::open_read_only(c) else { continue };
-            found = read_frames(&d);
+            found = read_frames(&d, tenths);
             if found.is_some() {
                 break;
             }
@@ -126,20 +164,20 @@ pub fn poll(ctx: &mut PollContext) {
         let s = match found {
             // KP 8K receiver: state 02 is "fully charged", shown as 100 %.
             Some(((_, ON_POWER), model)) if pid == RECEIVER_8K => {
-                DeviceStatus { percent: 100, full: true, charging: true, detail: "fully charged".into(), ..base(pid, Some(model)) }
+                DeviceStatus { percent: 100, full: true, charging: true, detail: "已充满".into(), ..base(pid, Some(model), &product) }
             }
             Some(((level, state), model)) => DeviceStatus {
                 percent: level,
                 charging: state == CHARGING,
                 detail: match state {
                     ON_BATTERY => String::new(),
-                    ON_POWER => "on power".into(),
-                    CHARGING => "charging".into(),
-                    other => format!("state {other:02X}"),
+                    ON_POWER => "已接电（未充电）".into(),
+                    CHARGING => "充电中".into(),
+                    other => format!("状态 {other:02X}"),
                 },
-                ..base(pid, Some(model))
+                ..base(pid, Some(model), &product)
             },
-            None => DeviceStatus { connected: false, ..base(pid, None) },
+            None => DeviceStatus { connected: false, ..base(pid, None, &product) },
         };
         ctx.add(s, vid, pid);
     }
@@ -170,6 +208,31 @@ mod tests {
         assert_eq!(model_name(RECEIVER_8K, 0x73), "Inphic IN10R MAX");
         assert_eq!(model_name(RECEIVER_8K, 0x99), "Wireless mouse");
         assert_eq!(model_name(RECEIVER, 0x3D), "Attack Shark mouse");
+    }
+
+    #[test]
+    fn gm3323d_reports_tenths() {
+        // 实测：这颗 GM3323D（产品串 "GM3323D"，型号字节 00）在 80 % 时推 03 00 40 01 08。
+        assert!(reports_tenths("GM3323D"));
+        assert!(reports_tenths("gm 3323d"));
+        assert!(!reports_tenths("2.4G Wireless Receiver"));
+        assert_eq!(level_percent(true, 8), Some(80));
+        assert_eq!(level_percent(true, 10), Some(100));
+        assert_eq!(level_percent(true, 0), Some(0));
+        // 万一固件某天回了 0..=100，照样按百分比认，不会读不出来。
+        assert_eq!(level_percent(true, 0x50), Some(80));
+        assert_eq!(level_percent(false, 8), Some(8));
+        assert_eq!(level_percent(false, 0x50), Some(80));
+        assert_eq!(level_percent(false, 101), None);
+    }
+
+    #[test]
+    fn the_product_string_names_the_mouse() {
+        assert_eq!(display_name(RECEIVER, Some(0), "GM3323D"), "GM3323D");
+        assert_eq!(display_name(RECEIVER, Some(0), ""), "Attack Shark mouse");
+        assert_eq!(display_name(RECEIVER, Some(0x55), "2.4G Wireless Receiver"), "Attack Shark mouse");
+        // KP 8K 上的 Delux / Inphic 仍按型号表取名。
+        assert_eq!(display_name(RECEIVER_8K, Some(0x3D), "2.4G Receiver"), "Delux M900 Pro");
     }
 
     #[test]

@@ -1,4 +1,4 @@
-# BatteryHub v1.7 中文版（Rust）
+# BatteryHub v1.7.1 中文版（Rust）
 
 BatteryHub 的 Windows 超轻量 Rust 实现，是对 [krisgfx9/Wireless-Device-Battery-Monitor](https://github.com/krisgfx9/Wireless-Device-Battery-Monitor) 的重新实现（recode）。最初的想法、外观以及各设备的通信协议都来自原项目，一切荣誉归原项目作者。
 
@@ -8,10 +8,16 @@ BatteryHub 的 Windows 超轻量 Rust 实现，是对 [krisgfx9/Wireless-Device-
 
 | 文件 | 说明 |
 |---|---|
-| `BatteryHub-Taskbar-Setup-v1.7.exe` | 安装程序：安装 / 更新 / 卸载 |
+| `BatteryHub-Taskbar-Setup-v1.7.1.exe` | 安装程序：安装 / 更新 / 卸载 |
 | `SHA256SUMS.txt` | 校验和 |
 
 已经装好了？在右键菜单里用 *检查更新...*（v1.1 起），或者运行新的安装程序并点击 **更新**。你的设置和开机启动选择都会保留。
+
+## v1.7.1 修复
+
+- **GM3323D 鼠标电量只有真实值的十分之一**（`1D57:FA60` Xenta 接收器）：这颗鼠标按“成”报电量（0..10），而驱动按百分比读，于是 80 % 显示成 8 %。现在这类型号按 ×10 换算；万一固件回报 0..100 也照样按百分比认，不会读不出。实测：80 % 时接收器推 `03 00 40 01 08`，修好后显示 `GM3323D 80%`。
+- **设备名改用设备自己的产品串**：以前这台鼠标在菜单 / 悬停卡片里都叫 “Attack Shark mouse”，现在显示 `GM3323D`；产品串是通用串（`2.4G Receiver` 之类）时仍回退到型号表。
+- 这颗接收器上原有的 Attack Shark X1 / X11、Delux M900 Pro、Inphic IN10 (R) MAX 行为不变（百分比型号不受 ×10 影响，已有单元测试覆盖）。
 
 ## v1.7 新增（本仓库）
 

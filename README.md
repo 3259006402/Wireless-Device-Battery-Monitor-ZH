@@ -1,6 +1,6 @@
 <p align="center"><img src="res/batteryhub.png" width="112" alt="BatteryHub 图标"></p>
 
-<h1 align="center">BatteryHub v1.7 中文版</h1>
+<h1 align="center">BatteryHub v1.7.1 中文版</h1>
 
 <p align="center">
 <b>BatteryHub 在 Windows 上的超轻量 Rust 实现。</b><br>
@@ -47,7 +47,7 @@
 
 ## 下载
 
-从[**最新发布**](../../releases/latest)获取 **`BatteryHub-Taskbar-Setup-v1.7.exe`**，运行后点击 **安装**。
+从[**最新发布**](../../releases/latest)获取 **`BatteryHub-Taskbar-Setup-v1.7.1.exe`**，运行后点击 **安装**。
 
 - 不需要管理员权限（按用户安装）。
 - 已经装过？用右键菜单里的*检查更新...*，或者运行新的安装程序并点击 **更新**。
@@ -244,7 +244,7 @@ BatteryHub 也会出现在**设置 → 应用 → 已安装的应用**中（名�
 | Keychron | 鼠标（M1、M2、M3、M3 mini、M6、M7）使用 Keychron Link 接收器 `3434:D030` / `3434:D031`；键盘只有在刷了 `KC_GET_BATTERY` 固件补丁后才支持（[ldkv/qmk_firmware#1](https://github.com/ldkv/qmk_firmware/pull/1)），因为原厂键盘固件只通过蓝牙上报电量（协议见原版 C++ BatteryHub，GPL-3.0） |
 | ROCCAT | Syn Max Air 耳机，通过其 2.4 GHz 接收器（电压曲线；充电时电量较粗） |
 | FNATIC | BOLT 鼠标通过其接收器 `2F0E:0203`（USB 线缆 `2F0E:0204` 只用于标记“正在充电”）；由 [Jere2201](https://github.com/Jere2201) 在 #48 根据 USBPcap 抓包贡献，并在真机测试 |
-| Attack Shark / Delux / Inphic | 鼠标（例如 X1、X11）使用 Xenta 2.4 GHz 接收器 `1D57:FA60`（协议来自 [Attack Shark Battery KDE](https://gitlab.com/gabriel17166/Attack-Shark-Battery-KDE) 和 [attackshark-battery-windows](https://github.com/daeoxide/attackshark-battery-windows)，均 MIT）；Delux M900 Pro 和 Inphic IN10 (R) MAX 使用 `1D57:FA65` 接收器（报文来自 [omarchy-delux-m900](https://github.com/AeonArcHQ/omarchy-delux-m900)（MIT）和原项目） |
+| Attack Shark / Delux / Inphic | 鼠标（例如 X1、X11）使用 Xenta 2.4 GHz 接收器 `1D57:FA60`（协议来自 [Attack Shark Battery KDE](https://gitlab.com/gabriel17166/Attack-Shark-Battery-KDE) 和 [attackshark-battery-windows](https://github.com/daeoxide/attackshark-battery-windows)，均 MIT）；Delux M900 Pro 和 Inphic IN10 (R) MAX 使用 `1D57:FA65` 接收器（报文来自 [omarchy-delux-m900](https://github.com/AeonArcHQ/omarchy-delux-m900)（MIT）和原项目）。**GM3323D** 也走 `1D57:FA60`，但它的电量按“成”报（0..10），v1.7.1 起按 ×10 换算、并用设备自己的产品串当名字（实测：80% 时接收器推 `03 00 40 01 08`） |
 | Sony | DualShock 4、DualSense、DualSense Edge（USB 和蓝牙） |
 | Apple | AirPods 和 Beats，通过 BLE 近距广播读取（左 / 右 / 充电盒） |
 | 蓝牙 | Windows 知道电量的任何设备，另加 Google Fast Pair 的左 / 右 / 盒电量拆分 |
@@ -375,7 +375,7 @@ name=我的雷柏鼠标
 .\build-release.ps1
 ```
 
-这会先构建程序，再构建内嵌该程序的安装程序（`installer/`、`BH_PAYLOAD_DIR`），并生成 `release\BatteryHub-Taskbar-Setup-v1.7.exe` 和 `SHA256SUMS.txt`。版本号来自 `VERSION` 文件（最多四段，例如 `1.0.1.1`）。
+这会先构建程序，再构建内嵌该程序的安装程序（`installer/`、`BH_PAYLOAD_DIR`），并生成 `release\BatteryHub-Taskbar-Setup-v1.7.1.exe` 和 `SHA256SUMS.txt`。版本号来自 `VERSION` 文件（最多四段，例如 `1.0.1.1`）。
 
 | 路径 | 内容 |
 |---|---|

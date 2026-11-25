@@ -53,7 +53,7 @@ cargo test --lib
 .\build-release.ps1    # 需要 Visual Studio Build Tools 与 Windows SDK
 ```
 
-> 本次实测结果（含新增的 15 个用例）：`cargo test --lib` 有 225 个用例通过，6 个失败，失败原因都是环境权限：
+> 本次实测结果（含新增的 18 个用例）：`cargo test --lib` 有 228 个用例通过，6 个失败，失败原因都是环境权限：
 >
 > - 4 个向 `%TEMP%` 建目录 / 写文件（`history::tests::atomic_write_*`、`install::safety_tests::file_is_replaced_*`、`a_file_that_cannot_be_replaced_*`）。把 `TEMP` 指到工作区内的可写目录后这 4 个立即通过。
 > - 2 个需要写 `HKCU`（`settings::tests::names_survive_in_the_registry`、`install::safety_tests::values_lists_past_large_values`），在受限令牌的终端里无法创建测试用的注册表键。
